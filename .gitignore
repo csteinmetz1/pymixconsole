@@ -1,4 +1,8 @@
-
+env/
+build/
 dist/
 *.pyc
 .vscode
+*.egg-info
+
+multitrack/
