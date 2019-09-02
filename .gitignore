@@ -1,8 +1,13 @@
-env/
+# build
 build/
 dist/
-*.pyc
-.vscode
 *.egg-info
 
+# junk
+.DS_Store
+
+# dev
+testing.pys
 multitrack/
+.vscode
+env/
