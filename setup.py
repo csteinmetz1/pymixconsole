@@ -13,7 +13,7 @@ setup(name='pymixconsole',
       author_email='cjstein@clemson.edu',
       packages=['pymixconsole'],
       install_requires=['scipy>=1.0.1',
-                        'numpy>=1.14.2']
+                        'numpy>=1.14.2'],
       classifiers=(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
