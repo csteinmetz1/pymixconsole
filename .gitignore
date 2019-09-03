@@ -7,7 +7,8 @@ dist/
 .DS_Store
 
 # dev
-testing.pys
+testing.py
+__pycache__
 multitrack/
 .vscode
 env/
