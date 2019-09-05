@@ -1,4 +1,4 @@
-# pymixconsole
+# <img alt="pymixconsole" src="img/icons8-adjust-60.png" height="30"> pymixconsole
 Headless multitrack mixing console in Python
 
 ## Installation
