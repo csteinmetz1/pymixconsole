@@ -71,7 +71,7 @@ class Multitrack():
         
         for track_file in self.files:
             track_data, track_rate = sf.read(track_file) # load audio (with shape (samples, channels))
-            print(track_data.shape)
+            #print(track_data.shape)
 
             pad_size = self.num_samples - track_data.shape[0]
             
@@ -79,7 +79,7 @@ class Multitrack():
                 raise RuntimeError(f"Track has fs={track_rate}, but project has fs={self.rate}.")
 
             if len(track_data.shape) > 1:
-                print("Loaded stereo track. Splitting to mono...")
+                #print("Loaded stereo track. Splitting to mono...")
                 for ch in range(track_data.shape[1]):
 
                     self.data[:,self.loaded_channels] = np.pad(track_data[:,ch], (0,pad_size), 'constant')
