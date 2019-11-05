@@ -33,6 +33,10 @@ class IIRfilter(object):
         # filter state
         self.zi = None
 
+        # coeffs (temporary fix, since we don't want to recalculate unless we have to)
+        self.a = self.generate_coefficients()[1]
+        self.b = self.generate_coefficients()[0]
+
     def __str__(self):
         filter_info = dedent("""
         ------------------------------
@@ -155,7 +159,7 @@ class IIRfilter(object):
         Params
         -------
         data : ndarrary
-            Input audio data.
+            Input audio data. (samples, channels)
         Returns
         -------
         filtered_signal : ndarray
@@ -163,17 +167,19 @@ class IIRfilter(object):
         """
         # set the initial condition if not yet set
         if self.zi is None:
-            self.zi = scipy.signal.lfilter_zi(self.b, self.a)
+            self.zi = np.zeros((max(len(self.a), len(self.b)) - 1, data.shape[1]))
 
         # apply the filter and update the filter state
-        y, self.zi = scipy.signal.lfilter(self.b, self.a, data, zi=self.zi)
+        y, self.zi = scipy.signal.lfilter(self.b, self.a, data, axis=0, zi=self.zi)
 
         return self.passband_gain * y
 
-    @property
-    def a(self):
-        return self.generate_coefficients()[1]
+    #@property
+    #def a(self):
+    #    print("gen a")
+    #    return self.generate_coefficients()[1]
 
-    @property
-    def b(self):
-        return self.generate_coefficients()[0]
+    #@property
+    #def b(self):
+    #    print("gen b")
+    #    return self.generate_coefficients()[0]

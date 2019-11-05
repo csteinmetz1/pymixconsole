@@ -3,11 +3,12 @@ import numpy as np
 from .channel import Channel
 
 class MixConsole():
-    def __init__(self, multitrack, block_size=512):
+    def __init__(self, multitrack, block_size=512, verbose=False):
 
         self.multitrack = multitrack
         self.block_size = block_size
         self.num_output_channels = 2
+        self.verbose = verbose
 
         # get properties from the multitrack
         self.sample_rate  = multitrack.rate
@@ -40,6 +41,9 @@ class MixConsole():
 
         for ch_idx in range(self.num_channels):
             downmix_buffer += multitrack_block[:,ch_idx,:]
+
+        if self.verbose:
+            print(f"Found {np.sum(np.where(np.abs(downmix_buffer) >= 1))} possibly clipped samples.")
 
         return downmix_buffer
 

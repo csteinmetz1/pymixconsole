@@ -3,11 +3,11 @@ import numpy as np
 from ..processor import Processor
 from ..components.irrfilter import IIRfilter
 
-default_bands = [{"filter_type" : "low_shelf",  "gain" : 2.0, "Fc" : 80.0,    "Q" : 0.707},
-                 {"filter_type" : "peaking",    "gain" : 1.0, "Fc" : 200.0,   "Q" : 0.707},
-                 {"filter_type" : "peaking",    "gain" : 1.0, "Fc" : 1000.0,  "Q" : 0.707},
-                 {"filter_type" : "peaking",    "gain" : 1.0, "Fc" : 5000.0,  "Q" : 0.707},
-                 {"filter_type" : "high_shelf", "gain" : 2.0, "Fc" : 10000.0, "Q" : 0.707}]
+default_bands = [{"filter_type" : "low_shelf",  "gain" : 12.0, "Fc" : 80.0,    "Q" : 0.707},
+                 {"filter_type" : "peaking",    "gain" : 0.0, "Fc" : 200.0,   "Q" : 0.707},
+                 {"filter_type" : "peaking",    "gain" : -60.0, "Fc" : 1000.0,  "Q" : 5.0},
+                 {"filter_type" : "peaking",    "gain" : 0.0, "Fc" : 5000.0,  "Q" : 0.707},
+                 {"filter_type" : "high_shelf", "gain" : 0.0, "Fc" : 10000.0, "Q" : 0.707}]
 
 class Equaliser(Processor):
     """ N band parametreic equalizer with customizable filter shapes

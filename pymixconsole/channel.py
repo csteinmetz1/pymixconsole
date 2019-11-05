@@ -10,21 +10,10 @@ class Channel():
         self.block_size = block_size
 
         # parameters
-        self.processors = [Gain(2.0)] #Equaliser(sample_rate=self.sample_rate)
+        self.processors = [Gain(2.0), Panner(0.5), Equaliser(sample_rate=self.sample_rate)]
 
     def process(self, ch_buffer):
         for processor in self.processors:
+            ch_buffer = processor.process(ch_buffer)
 
-            # this logic is janky so fix soon 
-            # we need standardization, 
-            # right now the panner turns the track stereo, 
-            # this should happen from the stae
-
-            if ch_buffer.ndim == 1:
-                ch_buffer = processor.process(ch_buffer)
-
-            elif ch_buffer.ndim == 2:
-                for ch in np.arange(ch_buffer.ndim):
-                    ch_buffer[:,ch] = processor.process(ch_buffer[:,ch])
-        
         return ch_buffer
