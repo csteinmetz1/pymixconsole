@@ -25,10 +25,10 @@ class MixConsole():
         """ Process a block of n audio channels """
 
         input_buffer = next(self.multitrack)
-        output_buffer = np.zeros([input_buffer.shape[0], input_buffer.shape[1], 1])		
+        output_buffer = np.empty([input_buffer.shape[0], input_buffer.shape[1], self.num_output_channels])		
 
         for ch_idx, channel in enumerate(self.channels):
-            output_buffer[:,ch_idx,:] = np.expand_dims(channel.process(input_buffer[:,ch_idx]), axis=-1)
+            output_buffer[:,ch_idx,:] = channel.process(input_buffer[:,ch_idx])
 
         downmix_buffer = self.downmix_multitrack_block(output_buffer)
 
