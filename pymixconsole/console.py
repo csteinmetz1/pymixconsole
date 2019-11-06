@@ -3,10 +3,9 @@ import numpy as np
 from .channel import Channel
 
 class MixConsole():
-    def __init__(self, multitrack, block_size=512, verbose=False):
+    def __init__(self, multitrack, verbose=False):
 
         self.multitrack = multitrack
-        self.block_size = block_size
         self.num_output_channels = 2
         self.verbose = verbose
 
@@ -17,7 +16,7 @@ class MixConsole():
         # create each channel of the mix console
         self.channels = []
         for ch_idx in range(self.num_channels):
-            self.channels.append(Channel(self.sample_rate, self.block_size, 0.0))
+            self.channels.append(Channel(self.sample_rate, self.multitrack.block_size, 0.0))
 
     def set_console_parameters(self):
         pass
