@@ -9,17 +9,14 @@ default_bands = [{"filter_type" : "low_shelf",  "gain" : 0.0, "Fc" :    80.0, "Q
                  {"filter_type" : "peaking",    "gain" : 0.0, "Fc" :  5000.0, "Q" : 0.707},
                  {"filter_type" : "high_shelf", "gain" : 0.0, "Fc" : 10000.0, "Q" : 0.707}]
 
+default_params = {"in_gain" : 0.0, "out_gain" : 0.0, "bands" : default_bands}
+
 class Equaliser(Processor):
-    """ N band parametreic equalizer with customizable filter shapes
+    """ N band parametreic equaliser with customizable filter shapes
 
     """
-    def __init__(self, in_gain_val=0.0, out_gain_val=0.0, bands=default_bands, sample_rate=44100):
-        super().__init__("Equaliser", 
-                        {"in_gain" : in_gain_val,
-                         "out_gain": out_gain_val,
-                         "bands" : bands}, 
-                         sample_rate)
-        
+    def __init__(self, name="Equaliser", parameters=default_params, block_size=512, sample_rate=44100):
+        super().__init__(name, parameters, block_size, sample_rate)
         self.filters = self.setup_filters()
 
     def setup_filters(self):
