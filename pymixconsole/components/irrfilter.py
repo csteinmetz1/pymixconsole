@@ -167,7 +167,10 @@ class IIRfilter(object):
         """
         # set the initial condition if not yet set
         if self.zi is None:
-            self.zi = np.zeros((max(len(self.a), len(self.b)) - 1, data.shape[1]))
+            if data.ndim == 1:
+                self.zi = np.zeros((max(len(self.a), len(self.b)) - 1,))
+            else:
+                self.zi = np.zeros((max(len(self.a), len(self.b)) - 1, data.shape[1]))
 
         # apply the filter and update the filter state
         y, self.zi = scipy.signal.lfilter(self.b, self.a, data, axis=0, zi=self.zi)
