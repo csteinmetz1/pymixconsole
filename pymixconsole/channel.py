@@ -9,9 +9,11 @@ class Channel():
         self.sample_rate = sample_rate
         self.block_size = block_size
 
-        # parameters
-        self.processors = [Gain(2.0), Panner(0.5), Equaliser(sample_rate=self.sample_rate)]
-
+        # parameters (might be better to note use a list as access is less clear)
+        self.processors = [Gain(block_size=block_size, sample_rate=sample_rate),
+                           Equaliser(block_size=block_size, sample_rate=sample_rate),
+                           Panner(block_size=block_size, sample_rate=sample_rate)]
+                           
     def process(self, ch_buffer):
         for processor in self.processors:
             ch_buffer = processor.process(ch_buffer)
