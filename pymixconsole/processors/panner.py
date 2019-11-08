@@ -17,12 +17,9 @@ class Panner(Processor):
         super().__init__(name, parameters, block_size, sample_rate) 
 
         # buffer to hold 
-        self.output_buffer = np.empty([self.block_size, self.parameters['outputs']])
+        self.__output_buffer = np.empty([self.block_size, self.parameters['outputs']])
 
-        # get pan coeffs
-        self.calculate_pan_coefficents()
-
-    def calculate_pan_coefficents(self):
+    def __calculate_pan_coefficents(self):
         """ Based on the set pan law deteremine the gain value
             to apply for the left and right channel to achieve panning effect.
 
@@ -39,18 +36,16 @@ class Panner(Processor):
         theta = self.parameters["pan_val"] * (np.pi/2)
 
         if   self.parameters["pan_law"] == "linear":
-            self.L = ((np.pi/2) - theta) * (2/np.pi)
-            self.R = theta * (2/np.pi)
+            self.__L = ((np.pi/2) - theta) * (2/np.pi)
+            self.__R = theta * (2/np.pi)
         elif self.parameters["pan_law"] == "constant_power":
-            self.L = np.cos(theta)
-            self.R = np.sin(theta)
+            self.__L = np.cos(theta)
+            self.__R = np.sin(theta)
         elif self.parameters["pan_law"] == "-4.5dB":
-            self.L = np.sqrt(((np.pi/2) - theta) * (2/np.pi) * np.cos(theta))
-            self.R = np.sqrt(theta * (2/np.pi) * np.sin(theta))
+            self.__L = np.sqrt(((np.pi/2) - theta) * (2/np.pi) * np.cos(theta))
+            self.__R = np.sqrt(theta * (2/np.pi) * np.sin(theta))
         else:
             raise ValueError(f"Invalid pan_law {self.parameters['pan_val']}.")
-
-        return self.L, self.R
 
     def process(self, data):
         """ Apply panning gains based on chosen pan law.
@@ -67,17 +62,25 @@ class Panner(Processor):
         """
 
         # apply the channel gains
-        self.output_buffer[:,0] = self.L * data
-        self.output_buffer[:,1] = self.R * data
+        self.__output_buffer[:,0] = self.__L * data
+        self.__output_buffer[:,1] = self.__R * data
 
-        return self.output_buffer
+        return self.__output_buffer
 
-    # work in progress
+    @property
+    def parameters(self):
+        return self.__parameters
 
-    #@property
-    #def parameters(self):
-    #    return self._parameters
+    @parameters.setter
+    def parameters(self, parameters):
+        self.__parameters = parameters
+        self.__calculate_pan_coefficents()
 
-    #@parameters.setter
-    #def parameters(self, parameters):
-    #    self.L, self.R = self.calculate_pan_coefficents()
+    @property
+    def block_size(self):
+        return self.__block__size
+    
+    @block_size.setter
+    def block_size(self, block_size):
+        self.__block__size = block_size
+        self.__output_buffer = np.empty([block_size, self.parameters['outputs']])
