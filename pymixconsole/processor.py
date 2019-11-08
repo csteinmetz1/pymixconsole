@@ -8,8 +8,10 @@ class Processor():
         self.block_size  = block_size
         self.sample_rate = sample_rate
 
-    def db2linear(self, value):
+    @staticmethod
+    def db2linear(value):
         return np.power(10, value/20)
 
-    def linear2db(self, value):
+    @staticmethod
+    def linear2db(value):
         return 20 * np.log10(value)
