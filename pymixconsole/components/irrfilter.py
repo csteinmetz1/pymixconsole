@@ -22,20 +22,18 @@ class IIRfilter(object):
         Shape of the filter.
     """
 
-    def __init__(self, G, Q, fc, rate, filter_type, passband_gain=1.0):
-        self.G  = G
-        self.Q  = Q
-        self.fc = fc
-        self.rate = rate
-        self.filter_type = filter_type
+    def __init__(self, G, Q, fc, rate, filter_type, passband_gain=1.0, n_channels=1):
+        self.__G  = G
+        self.__Q  = Q
+        self.__fc = fc
+        self.__rate = rate
+        self.__filter_type = filter_type
+
+        # calculate biquad coefficients
+        self.generate_coefficients()
+
+        self.n_channels = n_channels
         self.passband_gain = passband_gain
-
-        # filter state
-        self.zi = None
-
-        # coeffs (temporary fix, since we don't want to recalculate unless we have to)
-        self.a = self.generate_coefficients()[1]
-        self.b = self.generate_coefficients()[0]
 
     def __str__(self):
         filter_info = dedent("""
@@ -62,6 +60,12 @@ class IIRfilter(object):
         _a0=self.a[0], _a1=self.a[1], _a2=self.a[2]))
 
         return filter_info
+
+    def reset_state(self):
+        if self.n_channels == 1:
+            self.zi = np.zeros((max(len(self.a), len(self.b)) - 1,))
+        else:
+            self.zi = np.zeros((max(len(self.a), len(self.b)) - 1, self.n_channels))
 
     def generate_coefficients(self):
         """ Generates biquad filter coefficients using instance filter parameters. 
@@ -152,7 +156,7 @@ class IIRfilter(object):
         else:
             raise ValueError("Invalid filter type", self.filter_type)            
 
-        return np.array([b0, b1, b2])/a0, np.array([a0, a1, a2])/a0
+        self.b, self.a = np.array([b0, b1, b2])/a0, np.array([a0, a1, a2])/a0
 
     def apply_filter(self, data):
         """ Apply the IIR filter to an input signal.
@@ -165,24 +169,61 @@ class IIRfilter(object):
         filtered_signal : ndarray
             Filtered input audio.
         """
-        # set the initial condition if not yet set
-        if self.zi is None:
-            if data.ndim == 1:
-                self.zi = np.zeros((max(len(self.a), len(self.b)) - 1,))
-            else:
-                self.zi = np.zeros((max(len(self.a), len(self.b)) - 1, data.shape[1]))
-
         # apply the filter and update the filter state
         y, self.zi = scipy.signal.lfilter(self.b, self.a, data, axis=0, zi=self.zi)
 
         return self.passband_gain * y
 
-    #@property
-    #def a(self):
-    #    print("gen a")
-    #    return self.generate_coefficients()[1]
+    @property
+    def G(self):
+        return self.__G
+    
+    @G.setter
+    def G(self, G):
+        self.__G = G
+        self.generate_coefficients()
 
-    #@property
-    #def b(self):
-    #    print("gen b")
-    #    return self.generate_coefficients()[0]
+    @property
+    def Q(self):
+        return self.__Q
+    
+    @Q.setter
+    def Q(self, Q):
+        self.__Q = Q
+        self.generate_coefficients()
+
+    @property
+    def fc(self):
+        return self.__fc
+    
+    @fc.setter
+    def fc(self, fc):
+        self.__fc = fc
+        self.generate_coefficients()
+
+    @property
+    def rate(self):
+        return self.__rate
+
+    @rate.setter
+    def rate(self, rate):
+        self.__rate = rate
+        self.generate_coefficients()
+
+    @property
+    def filter_type(self):
+        return self.__filter_type
+
+    @filter_type.setter
+    def filter_type(self, filter_type):
+        self.__filter_type = filter_type
+        self.generate_coefficients()
+
+    @property
+    def n_channels(self):
+        return self.__n_channels
+
+    @n_channels.setter
+    def n_channels(self, n_channels):
+        self.__n_channels = n_channels
+        self.reset_state()
