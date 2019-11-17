@@ -7,7 +7,8 @@ from ..components.comb import Comb
 
 default_params = {"in_gain"       : 0.0,
                   "stereo_spread" : 23, 
-                  "room_size"     : 0.8,
+                  "room_size"     : 0.7,
+                  "damping"       : 0.5,
                   "wet_dry"       : 0.1} # 1.0 all wet; 0.0 all dry
 
 class Reverb(Processor):
@@ -15,8 +16,8 @@ class Reverb(Processor):
         super().__init__(name, parameters, block_size, sample_rate)
 
         roomsize = self.parameters["room_size"]
-        damp = 0.5
-        ss   = 23
+        damp = self.parameters["damping"]
+        ss = self.parameters["stereo_spread"]
 
         self.allpassL1 = Allpass(556,    roomsize, self.block_size)
         self.allpassR1 = Allpass(556+ss, roomsize, self.block_size)

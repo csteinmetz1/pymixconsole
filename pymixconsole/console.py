@@ -3,36 +3,79 @@ import numpy as np
 from .channel import Channel
 
 class MixConsole():
-    def __init__(self, multitrack, verbose=False):
+    def __init__(self, multitrack=None, block_size=512, sample_rate=44100, num_channels=1, verbose=False):
+        """ Create a mixing console.
 
-        self.multitrack = multitrack
-        self.num_output_channels = 2
+        There are two options to intialize a console.
+
+        The first method involves providing a multitrack object
+        with channels of audio already loaded into the object
+        along with details like the block size and sampling rate.
+
+        The second method does not require a multitrack object 
+        or any audio to be loaded, but then it does require the 
+        passing of parameters like the `block_size`, `sample_rate`,
+        and `num_channels`
+
+        """
+
+        if multitrack:
+            self.num_output_channels = 2
+            # get properties from the multitrack
+            self.multitrack   = multitrack
+            self.sample_rate  = multitrack.rate
+            self.num_channels = multitrack.num_channels
+            self.block_size   = multitrack.block_size
+
+        elif all([block_size, sample_rate]):
+            self.sample_rate  = sample_rate
+            self.block_size   = block_size
+            self.num_channels = num_channels
+        else:
+            raise ValueError("Pass either multitrack object or provide all initialization parameters.")
+
         self.verbose = verbose
-
-        # get properties from the multitrack
-        self.sample_rate  = multitrack.rate
-        self.num_channels = multitrack.num_channels
 
         # create each channel of the mix console
         self.channels = []
         for ch_idx in range(self.num_channels):
-            self.channels.append(Channel(self.sample_rate, self.multitrack.block_size, 0.0))
+            self.channels.append(Channel(self.sample_rate, self.block_size))
 
     def set_console_parameters(self):
         pass
 
-    def process_block(self):
-        """ Process a block of n audio channels """
+    def process_next_block(self):
+        """ Process the next block of n audio channels """
 
-        input_buffer = next(self.multitrack)
-        output_buffer = np.empty([input_buffer.shape[0], input_buffer.shape[1], self.num_output_channels])		
-
-        for ch_idx, channel in enumerate(self.channels):
-            output_buffer[:,ch_idx,:] = channel.process(input_buffer[:,ch_idx])
-
+        input_buffer  = next(self.multitrack)
+        output_buffer = self.process_block(input_buffer)
         downmix_buffer = self.downmix_multitrack_block(output_buffer)
 
         return  input_buffer, downmix_buffer
+
+    def process_block(self, block):
+        """ Apply processors on the given block of audio 
+        
+        The input block has dimensions [samples, in_channels]
+        (all inputs are mono)
+
+        The output buffer has dimensions [samples, in_channels, out_channels]
+        (all output channels are stereo)
+        
+        """
+
+        if block.ndim == 1:
+            output_buffer = np.empty((block.shape[0], 1, 2))
+            block = np.expand_dims(block, -1)
+            num_block_channels = 1
+        else:
+            output_buffer = np.empty((block.shape[0], block.shape[1], 2))	
+            num_block_channels = block.shape[1]
+
+        for ch_idx in np.arange(num_block_channels):
+            output_buffer[:,ch_idx,:] = self.channels[ch_idx].process(block[:,ch_idx])
+
+        return output_buffer
 
     def downmix_multitrack_block(self, multitrack_block):
 

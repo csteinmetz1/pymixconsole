@@ -3,11 +3,11 @@ import numpy as np
 from ..processor import Processor
 from ..components.irrfilter import IIRfilter
 
-default_bands = [{"filter_type" : "low_shelf",  "gain" : 0.0, "Fc" :    80.0, "Q" : 0.707},
-                 {"filter_type" : "peaking",    "gain" : 0.0, "Fc" :   200.0, "Q" : 0.707},
-                 {"filter_type" : "peaking",    "gain" : 0.0, "Fc" :  1000.0, "Q" : 0.707},
-                 {"filter_type" : "peaking",    "gain" : 0.0, "Fc" :  5000.0, "Q" : 0.707},
-                 {"filter_type" : "high_shelf", "gain" : 0.0, "Fc" : 10000.0, "Q" : 0.707}]
+default_bands = {"low_shelf"   : {"filter_type" : "low_shelf",  "gain" : 0.0, "Fc" :    80.0, "Q" : 0.707},
+                 "first_band"  : {"filter_type" : "peaking",    "gain" : 0.0, "Fc" :   200.0, "Q" : 0.707},
+                 "second_band" : {"filter_type" : "peaking",    "gain" : 0.0, "Fc" :  1000.0, "Q" : 0.707},
+                 "third_band"  : {"filter_type" : "peaking",    "gain" : 0.0, "Fc" :  5000.0, "Q" : 0.707},
+                 "high_shelf"  : {"filter_type" : "high_shelf", "gain" : 0.0, "Fc" : 10000.0, "Q" : 0.707}}
 
 default_params = {"in_gain" : 0.0, "out_gain" : 0.0, "bands" : default_bands}
 
@@ -23,7 +23,7 @@ class Equaliser(Processor):
 
         filters = []
 
-        for band in self.parameters["bands"]:
+        for name, band in self.parameters["bands"].items():
             filters.append(IIRfilter(band["gain"], band["Q"], band["Fc"], self.sample_rate, band['filter_type']))
 
         return filters
