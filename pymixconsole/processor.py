@@ -8,6 +8,14 @@ class Processor():
         self.block_size  = block_size
         self.sample_rate = sample_rate
 
+    def reset(self):
+        for name, parameter in self.parameters.items():
+            parameter.reset()
+
+    def randomize(self, distribution="uniform"):
+        for name, parameter in self.parameters.items():
+            parameter.randomize(distribution=distribution)
+
     @staticmethod
     def db2linear(value):
         return np.power(10, value/20)
