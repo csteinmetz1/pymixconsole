@@ -2,7 +2,7 @@ import warnings
 import numpy as np
 from .channel import Channel
 
-class MixConsole():
+class Console():
     def __init__(self, multitrack=None, block_size=512, sample_rate=44100, num_channels=1, verbose=False):
         """ Create a mixing console.
 
