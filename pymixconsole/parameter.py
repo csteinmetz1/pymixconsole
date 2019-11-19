@@ -1,8 +1,8 @@
 import numpy as np
 
-class Parameter():
+class Parameter(object):
 
-    def __init__(self, value, kind, units="", minimum=None, maximum=None, options=[], print_precision=3):
+    def __init__(self, value, kind, units="", minimum=None, maximum=None, options=[], print_precision=1):
         self.kind  = kind
 
         if   self.kind == "string":
@@ -13,7 +13,7 @@ class Parameter():
             self.options = options
 
         elif self.kind == "int" or self.kind == "float":
-            if not all([minimum, maximum]):
+            if minimum is None or maximum is None:
                 raise ValueError("Parameter of kind 'int' and 'float' must have minimum and maximum values defined.")
             self.min = minimum
             self.max = maximum
@@ -26,27 +26,29 @@ class Parameter():
 
     def __repr__(self):
         if self.kind == "int":
-            return f"{self.value:d} : {self.kind} ({self.min:d} to {self.max:d})"
+            return f"{self.value:d} kind: {self.kind} ({self.min:d} to {self.max:d})"
         elif self.kind == "float":
             return f"{self.value:.{self.print_precision}f} {self.units} kind: '{self.kind}' default: {self._default:.{self.print_precision}f} {self.units} range: ({self.min:.{self.print_precision}f} to {self.max:.{self.print_precision}f})"
-        elif self.kind == " string":
-            return f"{self.value} : {self.kind} ({self.options})"
+        elif self.kind == "string":
+            return f"{self.value} kind: {self.kind} options: ({self.options})"
 
     def check_value(self, value):
         # if the value is a string check its in options
-        if self.kind == "string" and not value in self.options:
-            raise ValueError(f"Invalid value {value}. Must be one of {self.options}")
+        if self.kind == "string":
+            if not value in self.options:
+                raise ValueError(f"Invalid value {value}. Must be one of {self.options}")
 
         # if the value is int or float check if its in valid range
-        elif self.kind in ["int", "float"] and value < self.min or value > self.max:
-            raise ValueError(f"Invalid value {value}")
+        elif self.kind in ["int", "float"]:
+            if value < self.min or value > self.max:
+                raise ValueError(f"Invalid value {value}")
 
     def reset(self):
         self.value = self._default
 
     def randomize(self, distribution="uniform", p=[]):
         if   distribution == "uniform":
-            if   self.kind == "int":
+            if   self.kind == "int" and self.min != self.max:
                 self.value = np.random.randint(self.min, high=self.max)
             elif self.kind == "float":
                 self.value = (np.random.rand() * self.range) - np.abs(self.min)
@@ -58,11 +60,12 @@ class Parameter():
             elif self.kind == "float":
                 mu = self.range/2
                 sigma = (mu/3)
+                # this may not make a lot of sense
                 self.value = np.random.normal(mu, sigma) - np.abs(self.min)
             if self.kind == "string":
                 raise NotImplementedError()
         else:
-            raise ValueError(f"Invalid distribtuion {distribution}.")
+            raise ValueError(f"Invalid distribtuion: {distribution}.")
 
     @property
     def value(self):
