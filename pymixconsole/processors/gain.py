@@ -8,4 +8,4 @@ class Gain(Processor):
         super().__init__(name, parameters, block_size, sample_rate)
 
     def process(self, data):
-        return self.db2linear(self.parameters["gain_val"]) * data
+        return self.db2linear(self.parameters["gain_val"].value) * data
