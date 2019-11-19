@@ -1,14 +1,17 @@
+import random
+
 class ProcessorList(object):
 
-    def __init__(self, **args):
+    def __init__(self, block_size, sample_rate):
         self._processors = []
-
-        for idx, processor in enumerate(args):
-            self._processors.append(processor)
+        self._block_size = block_size
+        self._sample_rate = sample_rate
 
     def add(self, processor):
         self.check_processor(processor)
         self._processors.append(processor)
+        self._processors[-1].block_size = self._block_size
+        self._processors[-1].sample_rate = self._sample_rate
 
     def insert(self, processor, index):
         self.check_processor(processor)
@@ -37,6 +40,9 @@ class ProcessorList(object):
     def check_processor(self, processor):
         if processor.name in [processor.name for processor in self._processors]:
             raise ValueError("Processor names must be unique!")
+
+    def shuffle(self):
+        self._processors = random.shuffle(self._processors)
 
     def clear(self):
         self._processors = []
