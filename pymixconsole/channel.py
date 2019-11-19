@@ -12,14 +12,52 @@ class Channel():
         self.sample_rate = sample_rate
         self.block_size = block_size
 
-        # add the processors                           
-        self.processors = ProcessorList()
-        self.processors.add(Gain(name="gain", block_size=block_size, sample_rate=sample_rate))
-        self.processors.add(Equaliser(name="eq", block_size=block_size, sample_rate=sample_rate))
-        self.processors.add(Reverb(name="reverb", block_size=block_size, sample_rate=sample_rate))
+        # pre-processors (order is not shuffled)
+        self.pre_processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)
+        self.pre_processors.add(Gain(name="pre-gain"))
+
+        # core insert processors (order is shuffled on randomize)                           
+        self.processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)
+        #self.processors.add(Equaliser(name="eq"))
+        #self.processors.add(Reverb(name="reverb"))
+
+        # post-processors (order is not shuffled)
+        self.post_processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)
+        self.post_processors.add(Gain(name="post-gain"))
+        self.post_processors.add(Panner(name="panner"))
 
     def process(self, ch_buffer):
+
+        # apply pre-processors
+        for processor in self.pre_processors.get_all():
+            ch_buffer = processor.process(ch_buffer)
+
+        # apply core insert processors
         for processor in self.processors.get_all():
             ch_buffer = processor.process(ch_buffer)
 
+        # apply post-processors
+        for processor in self.post_processors.get_all():
+            ch_buffer = processor.process(ch_buffer)
+
+        # next, let's try this
+        #for processor in self.get_all_processors():
+        #    ch_buffer = processor.process(ch_buffer)
+
         return ch_buffer
+
+    def reset(self):
+        for processor in self.processors.get_all():
+            processor.reset()
+
+    def randomize(self):
+
+        # randomize each processor configuration
+        for processor in self.get_all_processors():   
+            self.processor.randomize()
+
+        # randomize settings of core processors only
+        self.processors.shuffle()
+
+    def get_all_processors():
+        return self.pre_processors.get_all() + self.processors.get_all() + self.post_processors.get_all()
