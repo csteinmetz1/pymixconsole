@@ -1,7 +1,11 @@
 import numpy as np
+
+from ..parameter import Parameter
 from ..processor import Processor
 
-default_params = {"pan_val" : 0.5, "outputs" : 2, "pan_law" : "-4.5dB"}
+default_params = {"pan_val" : Parameter(0.5, "float", minimum=0.0, maximum=1.0),
+                  "outputs" : Parameter(2, "int", minimum=2, maximum=2),
+                  "pan_law" : Parameter("-4.5dB", "string", options=["linear", "constant_power", "-4.5dB"])}
 
 class Panner(Processor):
     """ Simple stereo panner.
@@ -12,14 +16,13 @@ class Panner(Processor):
     Supported pan laws: ["linear", "constant_power", "-4.5dB"]
 
     """
-
     def __init__(self, name="Panner", parameters=default_params, block_size=512, sample_rate=44100):
         super().__init__(name, parameters, block_size, sample_rate) 
 
         # buffer to hold 
-        self.__output_buffer = np.empty([self.block_size, self.parameters['outputs']])
+        self._output_buffer = np.empty([self.block_size, self.parameters['outputs'].value])
 
-    def __calculate_pan_coefficents(self):
+    def _calculate_pan_coefficents(self):
         """ Based on the set pan law deteremine the gain value
             to apply for the left and right channel to achieve panning effect.
 
@@ -33,19 +36,19 @@ class Panner(Processor):
         """
 
         # first scale the linear [0, 1] to [0, pi/2]
-        theta = self.parameters["pan_val"] * (np.pi/2)
+        theta = self.parameters["pan_val"].value * (np.pi/2)
 
-        if   self.parameters["pan_law"] == "linear":
-            self.__L = ((np.pi/2) - theta) * (2/np.pi)
-            self.__R = theta * (2/np.pi)
-        elif self.parameters["pan_law"] == "constant_power":
-            self.__L = np.cos(theta)
-            self.__R = np.sin(theta)
-        elif self.parameters["pan_law"] == "-4.5dB":
-            self.__L = np.sqrt(((np.pi/2) - theta) * (2/np.pi) * np.cos(theta))
-            self.__R = np.sqrt(theta * (2/np.pi) * np.sin(theta))
+        if   self.parameters["pan_law"].value == "linear":
+            self._L = ((np.pi/2) - theta) * (2/np.pi)
+            self._R = theta * (2/np.pi)
+        elif self.parameters["pan_law"].value == "constant_power":
+            self._L = np.cos(theta)
+            self._R = np.sin(theta)
+        elif self.parameters["pan_law"].value == "-4.5dB":
+            self._L = np.sqrt(((np.pi/2) - theta) * (2/np.pi) * np.cos(theta))
+            self._R = np.sqrt(theta * (2/np.pi) * np.sin(theta))
         else:
-            raise ValueError(f"Invalid pan_law {self.parameters['pan_val']}.")
+            raise ValueError(f"Invalid pan_law {self.parameters['pan_law'].value}.")
 
     def process(self, data):
         """ Apply panning gains based on chosen pan law.
@@ -62,25 +65,25 @@ class Panner(Processor):
         """
 
         # apply the channel gains
-        self.__output_buffer[:,0] = self.__L * data
-        self.__output_buffer[:,1] = self.__R * data
+        self._output_buffer[:,0] = self._L * data
+        self._output_buffer[:,1] = self._R * data
 
-        return self.__output_buffer
+        return self._output_buffer
 
     @property
     def parameters(self):
-        return self.__parameters
+        return self._parameters
 
     @parameters.setter
     def parameters(self, parameters):
-        self.__parameters = parameters
-        self.__calculate_pan_coefficents()
+        self._parameters = parameters
+        self._calculate_pan_coefficents()
 
     @property
     def block_size(self):
-        return self.__block__size
+        return self._block_size
     
     @block_size.setter
     def block_size(self, block_size):
-        self.__block__size = block_size
-        self.__output_buffer = np.empty([block_size, self.parameters['outputs']])
+        self._block_size = block_size
+        self._output_buffer = np.empty([block_size, self.parameters['outputs'].value])
