@@ -33,11 +33,11 @@ class Parameter(object):
 
     def __repr__(self):
         if self.kind == "int":
-            return f"{self.value:d} kind: {self.kind} ({self.min:d} to {self.max:d})"
+            return f"{self.name} {self.value:d} kind: {self.kind} ({self.min:d} to {self.max:d})"
         elif self.kind == "float":
-            return f"{self.value:.{self.print_precision}f} {self.units} kind: '{self.kind}' default: {self._default:.{self.print_precision}f} {self.units} range: ({self.min:.{self.print_precision}f} to {self.max:.{self.print_precision}f})"
+            return f"{self.name} {self.value:.{self.print_precision}f} {self.units} kind: '{self.kind}' default: {self._default:.{self.print_precision}f} {self.units} range: ({self.min:.{self.print_precision}f} to {self.max:.{self.print_precision}f})"
         elif self.kind == "string":
-            return f"{self.value} kind: {self.kind} options: ({self.options})"
+            return f"{self.name} {self.value} kind: {self.kind} options: ({self.options})"
 
     def check_value(self, value):
         # if the value is a string check its in options
@@ -48,7 +48,7 @@ class Parameter(object):
         # if the value is int or float check if its in valid range
         elif self.kind in ["int", "float"]:
             if value < self.min or value > self.max:
-                raise ValueError(f"Invalid value {value}")
+                raise ValueError(f"Invalid value {value} for {self}")
 
     def reset(self):
         self.value = self._default
@@ -58,7 +58,7 @@ class Parameter(object):
             if   self.kind == "int" and self.min != self.max:
                 self.value = np.random.randint(self.min, high=self.max)
             elif self.kind == "float":
-                self.value = (np.random.rand() * self.range) - np.abs(self.min)
+                self.value = (np.random.rand() * self.range) + self.min
             elif self.kind == "string":
                 self.value = np.random.choice(self.options)
         elif distribution == "normal":
