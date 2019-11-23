@@ -41,7 +41,7 @@ class Channel():
 
         # randomize each processor configuration
         for processor in self.get_all_processors():   
-            self.processor.randomize()
+            processor.randomize()
 
         # randomize settings of core processors only
         self.processors.shuffle()

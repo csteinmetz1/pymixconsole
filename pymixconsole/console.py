@@ -93,4 +93,9 @@ class Console():
         """ Clear all processor states """
         pass
 
+    def randomize(self):
+
+        for channel in self.channels:
+            channel.randomize()
+
     
