@@ -13,17 +13,18 @@ class Panner(Processor):
     Supported pan laws: ["linear", "constant_power", "-4.5dB"]
 
     """
-    def __init__(self, name="Panner", parameters=None, block_size=512, sample_rate=44100):
+    def __init__(self, name="Panner", block_size=512, sample_rate=44100):
 
         # default processor class constructor
-        super().__init__(name, parameters, block_size, sample_rate) 
+        super().__init__(name, None, block_size, sample_rate) 
 
-        if not parameters:
-            self.parameters = ParameterList()
-            self.parameters.add(Parameter("pan", 0.5, "float", update=self, minimum=0.0, maximum=1.0))
-            self.parameters.add(Parameter("outputs", 2, "int", update=self, minimum=2, maximum=2))
-            self.parameters.add(Parameter("pan_law", "-4.5dB", "string", update=self, options=["linear", "constant_power", "-4.5dB"]))
-            #self.parameters = parameters
+        self.parameters = ParameterList()
+        self.parameters.add(Parameter("pan", 0.5, "float", update=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("outputs", 2, "int", update=self, minimum=2, maximum=2))
+        self.parameters.add(Parameter("pan_law", "-4.5dB", "string", update=self, options=["linear", "constant_power", "-4.5dB"]))
+
+        # setup the coefficents based on default params
+        self.update(None)
 
         # buffer to hold 
         self._output_buffer = np.empty([self.block_size, 2])
@@ -76,7 +77,7 @@ class Panner(Processor):
 
         return self._output_buffer
 
-    def update(self):
+    def update(self, parameter_name):
         self._calculate_pan_coefficents()
 
     @property
