@@ -23,7 +23,7 @@ class Equaliser(Processor):
         self.parameters.add(Parameter("low_shelf_freq",     80.0, "float", update=self, minimum=20.0,     maximum=1000.0))
         # first band parameters ---------------------------------------------------------------------------------------------
         self.parameters.add(Parameter("first_band_gain",     0.0, "float", update=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
-        self.parameters.add(Parameter("first_band_freq",   200.0, "float", update=self, minimum=200.0,    maximum=5000.0))        
+        self.parameters.add(Parameter("first_band_freq",   400.0, "float", update=self, minimum=200.0,    maximum=5000.0))        
         self.parameters.add(Parameter("first_band_q",        0.7, "float", update=self, minimum=MIN_Q,    maximum=MAX_Q))
         # second band parameters --------------------------------------------------------------------------------------------
         self.parameters.add(Parameter("second_band_gain",    0.0, "float", update=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
