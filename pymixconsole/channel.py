@@ -28,21 +28,8 @@ class Channel():
 
     def process(self, ch_buffer):
 
-        # apply pre-processors
-        for processor in self.pre_processors.get_all():
+        for processor in self.get_all_processors():
             ch_buffer = processor.process(ch_buffer)
-
-        # apply core insert processors
-        for processor in self.processors.get_all():
-            ch_buffer = processor.process(ch_buffer)
-
-        # apply post-processors
-        for processor in self.post_processors.get_all():
-            ch_buffer = processor.process(ch_buffer)
-
-        # next, let's try this
-        #for processor in self.get_all_processors():
-        #    ch_buffer = processor.process(ch_buffer)
 
         return ch_buffer
 
@@ -59,5 +46,5 @@ class Channel():
         # randomize settings of core processors only
         self.processors.shuffle()
 
-    def get_all_processors():
+    def get_all_processors(self):
         return self.pre_processors.get_all() + self.processors.get_all() + self.post_processors.get_all()

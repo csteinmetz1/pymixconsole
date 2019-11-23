@@ -59,21 +59,21 @@ class Console():
         The input block has dimensions [samples, in_channels]
         (all inputs are mono)
 
-        The output buffer has dimensions [samples, in_channels, out_channels]
+        The output buffer has dimensions [samples, out_channels]
         (all output channels are stereo)
         
         """
 
         if block.ndim == 1:
-            output_buffer = np.empty((block.shape[0], 1, 2))
+            output_buffer = np.empty((block.shape[0], 2))
             block = np.expand_dims(block, -1)
             num_block_channels = 1
         else:
-            output_buffer = np.empty((block.shape[0], block.shape[1], 2))	
+            output_buffer = np.empty((block.shape[0], 2))	
             num_block_channels = block.shape[1]
 
         for ch_idx in np.arange(num_block_channels):
-            output_buffer[:,ch_idx,:] = self.channels[ch_idx].process(block[:,ch_idx])
+            output_buffer += self.channels[ch_idx].process(block[:,ch_idx])
 
         return output_buffer
 

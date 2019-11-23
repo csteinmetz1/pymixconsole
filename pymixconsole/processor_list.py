@@ -32,6 +32,8 @@ class ProcessorList(object):
 
     def get(self, name):
         names = [processor.name for processor in self._processors]
+        if name not in names:
+            raise ValueError(f"Accessing non-existent processor '{name}'.")
         return self._processors[names.index(name)]
 
     def get_all(self):

@@ -1,9 +1,16 @@
+import weakref
 import numpy as np
 
 class Parameter(object):
 
-    def __init__(self, value, kind, units="", minimum=None, maximum=None, options=[], print_precision=1):
-        self.kind  = kind
+    def __init__(self, name, value, kind, update=None, units="", minimum=None, maximum=None, options=[], print_precision=1):
+
+        self.kind = kind
+        self.name = name
+        if update:
+            self.update = update
+        else:
+            self.update = update
 
         if   self.kind == "string":
             if len(options) < 1:
@@ -75,6 +82,13 @@ class Parameter(object):
     def value(self, value):
         self.check_value(value)
         self._value = value
+
+        # if there is a processor reference call its update method
+        # but only if we have added all parameters first?
+        if self.update and hasattr(self.update.parameters, self.name):
+            print(f"changing {self.name} to {value}.")
+            #self.update()
+            self.update.update()
 
     @property
     def kind(self):
