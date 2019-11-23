@@ -44,7 +44,7 @@ class ProcessorList(object):
             raise ValueError("Processor names must be unique!")
 
     def shuffle(self):
-        self._processors = random.shuffle(self._processors)
+        random.shuffle(self._processors)
 
     def clear(self):
         self._processors = []
