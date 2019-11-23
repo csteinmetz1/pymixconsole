@@ -4,6 +4,10 @@ class ParameterList():
     def __init__(self):
         pass
 
+    def __iter__(self):
+        for attr, value in self.__dict__.items():
+            yield attr, value
+
     def add(self, parameter):
         self.check_parameter(parameter)
         setattr(self, parameter.name, parameter)
