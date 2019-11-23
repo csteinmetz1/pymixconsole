@@ -87,8 +87,7 @@ class Parameter(object):
         # but only if we have added all parameters first?
         if self.update and hasattr(self.update.parameters, self.name):
             print(f"changing {self.name} to {value}.")
-            #self.update()
-            self.update.update()
+            self.update.update(self.name)
 
     @property
     def kind(self):

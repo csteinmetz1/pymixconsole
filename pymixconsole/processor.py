@@ -8,7 +8,7 @@ class Processor():
         self.block_size  = block_size
         self.sample_rate = sample_rate
 
-    def update(self):
+    def update(self, parameter_name):
         pass
 
     def reset(self):
