@@ -1,6 +1,8 @@
 import warnings
 import numpy as np
+
 from .channel import Channel
+from .util import logger
 
 class Console():
     def __init__(self, multitrack=None, block_size=512, sample_rate=44100, num_channels=1, verbose=False):
@@ -34,6 +36,7 @@ class Console():
         else:
             raise ValueError("Pass either multitrack object or provide all initialization parameters.")
 
+        self.log = logger.createLog("console")
         self.verbose = verbose
 
         # create each channel of the mix console
@@ -98,4 +101,25 @@ class Console():
         for channel in self.channels:
             channel.randomize()
 
+    def serialize(self):
+
+        serialized_channels = {"channels" : []}
+
+        for channel in self.channels:
+            serialized_channels["channels"].append(channel.serialize())
+
+        return serialized_channels
+
+    @property
+    def verbose(self):
+        return self._verbose
     
+    @verbose.setter
+    def verbose(self, verbose):
+        self._verbose = verbose
+
+        if verbose:
+            self.log.setLevel("DEBUG") 
+            self.log.info("Verbose mode enabled.")
+        else:
+            self.log.setLevel("ERROR") 

@@ -1,6 +1,8 @@
 import weakref
 import numpy as np
 
+from .util import logger
+
 class Parameter(object):
 
     def __init__(self, name, value, kind, update=None, units="", minimum=None, maximum=None, options=[], print_precision=1):
@@ -86,7 +88,8 @@ class Parameter(object):
         # if there is a processor reference call its update method
         # but only if we have added all parameters first?
         if self.update and hasattr(self.update.parameters, self.name):
-            print(f"changing {self.name} to {value}.")
+            log = logger.getLog("console")
+            log.info(f"changing {self.name} to {value}.")
             self.update.update(self.name)
 
     def serialize(self, normalize=False, one_hot_encode=False):
