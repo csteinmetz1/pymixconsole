@@ -7,6 +7,10 @@ class ProcessorList(object):
         self._block_size = block_size
         self._sample_rate = sample_rate
 
+    def __repr__(self):
+        for processor in self._processors:
+            print(processor)
+
     def add(self, processor):
         self.check_processor(processor)
         self._processors.append(processor)

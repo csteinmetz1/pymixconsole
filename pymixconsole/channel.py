@@ -46,5 +46,14 @@ class Channel():
         # randomize settings of core processors only
         self.processors.shuffle()
 
+    def serialize(self):
+
+        serialized_processors = {}
+
+        for processor in self.get_all_processors():
+            serialized_processors[processor.name] = processor.parameters.serialize()
+
+        return serialized_processors
+
     def get_all_processors(self):
         return self.pre_processors.get_all() + self.processors.get_all() + self.post_processors.get_all()

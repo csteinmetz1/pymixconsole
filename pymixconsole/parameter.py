@@ -89,6 +89,25 @@ class Parameter(object):
             print(f"changing {self.name} to {value}.")
             self.update.update(self.name)
 
+    def serialize(self, normalize=False, one_hot_encode=False):
+
+        # if this is a string then we use one hot encoding
+        if self.kind == "string":
+            if one_hot_encode:
+                val = np.zeros(len(self.options))
+                index = self.options.index(self.value)
+                val[index] = 1
+            else:
+                val = self.value
+
+        else:
+            if normalize:
+                val = self.value / self.max
+            else:
+                val = self.value
+        
+        return val
+
     @property
     def kind(self):
         return self._kind
