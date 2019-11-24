@@ -128,6 +128,6 @@ class Console(object):
 
         if verbose:
             self.log.setLevel("DEBUG") 
-            self.log.info("Verbose mode enabled.")
+            self.log.info("verbose mode enabled")
         else:
             self.log.setLevel("ERROR") 
