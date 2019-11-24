@@ -48,10 +48,21 @@ class Channel():
 
     def serialize(self):
 
-        serialized_processors = {}
+        serialized_processors = {"pre_processors"  : [],
+                                 "core_processors" : [],
+                                 "post_processors" : []}
 
-        for processor in self.get_all_processors():
-            serialized_processors[processor.name] = processor.parameters.serialize()
+        for processor in self.pre_processors.get_all():
+            serialized_processor = {processor.name : processor.parameters.serialize()}
+            serialized_processors["pre_processors"].append(serialized_processor)
+
+        for processor in self.processors.get_all():
+            serialized_processor = {processor.name : processor.parameters.serialize()}
+            serialized_processors["core_processors"].append(serialized_processor)
+
+        for processor in self.post_processors.get_all():
+            serialized_processor = {processor.name : processor.parameters.serialize()}
+            serialized_processors["post_processors"].append(serialized_processor)
 
         return serialized_processors
 

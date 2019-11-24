@@ -1,10 +1,11 @@
+import json
 import warnings
 import numpy as np
 
 from .channel import Channel
 from .util import logger
 
-class Console():
+class Console(object):
     def __init__(self, multitrack=None, block_size=512, sample_rate=44100, num_channels=1, verbose=False):
         """ Create a mixing console.
 
@@ -16,8 +17,10 @@ class Console():
 
         The second method does not require a multitrack object 
         or any audio to be loaded, but then it does require the 
-        passing of parameters like the `block_size`, `sample_rate`,
-        and `num_channels`
+        passing of parameters like `block_size`, `sample_rate`,
+        and `num_channels`. You can then pass entire console 
+        channel blocks into the `process_block()` function, or
+        optionally load a multitrack object later. 
 
         """
 
@@ -101,12 +104,17 @@ class Console():
         for channel in self.channels:
             channel.randomize()
 
-    def serialize(self):
+    def serialize(self, to_json=None):
 
         serialized_channels = {"channels" : []}
 
         for channel in self.channels:
             serialized_channels["channels"].append(channel.serialize())
+
+        if to_json:
+            with open(to_json, "w") as fp:
+                json.dump(serialized_channels, fp)
+                self.log.info(f"wrote serialized console paramters to file: '{to_json}'")
 
         return serialized_channels
 
