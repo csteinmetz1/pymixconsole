@@ -65,15 +65,25 @@ class Panner(Processor):
         data : ndarrary
             Input audio data. (samples, channels)
 
+        currently only support max of 2 channels
+
         Returns
         -------
         output_buffer : ndarray
             Panned input audio. (samples, channels)
         """
 
+        if data.ndim < 2:
+            data = np.expand_dims(data, axis=1)
+            L_ch = 0 
+            R_ch = 0
+        else:
+            L_ch = 0
+            R_ch = 1
+
         # apply the channel gains
-        self._output_buffer[:,0] = self._L * data
-        self._output_buffer[:,1] = self._R * data
+        self._output_buffer[:,0] = self._L * data[:,L_ch]
+        self._output_buffer[:,1] = self._R * data[:,R_ch]
 
         return self._output_buffer
 
