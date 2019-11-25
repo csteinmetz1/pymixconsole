@@ -11,7 +11,7 @@ MIN_Q    =   0.1
 MAX_Q    =  10.0
 
 class Equaliser(Processor):
-    """ N band parametreic equaliser with customizable filter shapes
+    """ Five band parametreic equaliser ( two shelves and three central bands )
 
     """
     def __init__(self, name="Equaliser", block_size=512, sample_rate=44100):
@@ -57,7 +57,7 @@ class Equaliser(Processor):
                 Q = getattr(self.parameters, band + "_q").value
                 filter_type = "peaking"
 
-            filters[band] = IIRfilter(G, Q, fc, rate, filter_type)
+            filters[band] = IIRfilter(G, Q, fc, rate, filter_type, n_channels=2)
 
         return bands, filters
 

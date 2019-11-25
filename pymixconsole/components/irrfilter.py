@@ -160,6 +160,7 @@ class IIRfilter(object):
 
     def apply_filter(self, data):
         """ Apply the IIR filter to an input signal.
+
         Params
         -------
         data : ndarrary
@@ -169,8 +170,12 @@ class IIRfilter(object):
         filtered_signal : ndarray
             Filtered input audio.
         """
+
+        if data.ndim < 2: zi_ch = self.zi[:,zi_ch]
+        else:             zi_ch = self.zi
+
         # apply the filter and update the filter state
-        y, self.zi = scipy.signal.lfilter(self.b, self.a, data, axis=0, zi=self.zi)
+        y, self.zi = scipy.signal.lfilter(self.b, self.a, np.squeeze(data), axis=0, zi=zi_ch)
 
         return self.passband_gain * y
 
