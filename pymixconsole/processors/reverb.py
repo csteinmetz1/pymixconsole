@@ -22,7 +22,8 @@ class Reverb(Processor):
         dp = self.parameters.damping.value
         ss = self.parameters.stereo_spread.value
 
-        # initialize Allpass and Feedback comb-filters (with coefficients optimized for fs=44.1kHz)
+        # initialize allpass and feedback comb-filters
+        # (with coefficients optimized for fs=44.1kHz)
         self.allpassL1 = Allpass(556,    rs, self.block_size)
         self.allpassR1 = Allpass(556+ss, rs, self.block_size)
         self.allpassL2 = Allpass(441,    rs, self.block_size)
