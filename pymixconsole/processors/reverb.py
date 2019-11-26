@@ -13,34 +13,12 @@ class Reverb(Processor):
         super().__init__(name, None, block_size, sample_rate)
 
         self.parameters = ParameterList()
-        self.parameters.add(Parameter("room_size",     0.5, "float", update=self, minimum=0.0, maximum=1.0))
-        self.parameters.add(Parameter("damping",       0.0, "float", update=self, minimum=0.0, maximum=1.0))
-        self.parameters.add(Parameter("wet_dry",       0.1, "float", update=self, minimum=0.0, maximum=1.0))
-        self.parameters.add(Parameter("stereo_spread",  23, "int",   update=self, minimum=0,   maximum=50))
+        self.parameters.add(Parameter("room_size",     0.5, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("damping",       0.0, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("wet_dry",       0.1, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("stereo_spread",  23, "int",   processor=self, minimum=0,   maximum=50))
 
-        rs = self.parameters.room_size.value
-        dp = self.parameters.damping.value
-        ss = self.parameters.stereo_spread.value
-
-        # initialize allpass and feedback comb-filters
-        # (with coefficients optimized for fs=44.1kHz)
-        self.allpassL1 = Allpass(556,    rs, self.block_size)
-        self.allpassR1 = Allpass(556+ss, rs, self.block_size)
-        self.allpassL2 = Allpass(441,    rs, self.block_size)
-        self.allpassR2 = Allpass(441+ss, rs, self.block_size)
-        self.allpassL3 = Allpass(341,    rs, self.block_size)
-        self.allpassR3 = Allpass(341+ss, rs, self.block_size)
-        self.allpassL4 = Allpass(225,    rs, self.block_size)
-        self.allpassR4 = Allpass(255+ss, rs, self.block_size)    
-
-        self.combL1 = Comb(1116,    dp, rs, self.block_size)
-        self.combR1 = Comb(1116+ss, dp, rs, self.block_size)
-        self.combL2 = Comb(1188,    dp, rs, self.block_size)
-        self.combR2 = Comb(1188+ss, dp, rs, self.block_size)
-        self.combL3 = Comb(1277,    dp, rs, self.block_size)
-        self.combR3 = Comb(1277+ss, dp, rs, self.block_size)
-        self.combL4 = Comb(1356,    dp, rs, self.block_size)
-        self.combR4 = Comb(1356+ss, dp, rs, self.block_size)
+        self.update(None)
 
     def process(self, x):
 
@@ -76,3 +54,29 @@ class Reverb(Processor):
         output[:,1] = (wet_g * (xR1 + xR3 - xR2 - xR4)) + (dry_g * x)
 
         return output
+
+    def update(self, parameter_name):
+
+        rs = self.parameters.room_size.value
+        dp = self.parameters.damping.value
+        ss = self.parameters.stereo_spread.value
+
+        # initialize allpass and feedback comb-filters
+        # (with coefficients optimized for fs=44.1kHz)
+        self.allpassL1 = Allpass(556,    rs, self.block_size)
+        self.allpassR1 = Allpass(556+ss, rs, self.block_size)
+        self.allpassL2 = Allpass(441,    rs, self.block_size)
+        self.allpassR2 = Allpass(441+ss, rs, self.block_size)
+        self.allpassL3 = Allpass(341,    rs, self.block_size)
+        self.allpassR3 = Allpass(341+ss, rs, self.block_size)
+        self.allpassL4 = Allpass(225,    rs, self.block_size)
+        self.allpassR4 = Allpass(255+ss, rs, self.block_size)    
+
+        self.combL1 = Comb(1116,    dp, rs, self.block_size)
+        self.combR1 = Comb(1116+ss, dp, rs, self.block_size)
+        self.combL2 = Comb(1188,    dp, rs, self.block_size)
+        self.combR2 = Comb(1188+ss, dp, rs, self.block_size)
+        self.combL3 = Comb(1277,    dp, rs, self.block_size)
+        self.combR3 = Comb(1277+ss, dp, rs, self.block_size)
+        self.combL4 = Comb(1356,    dp, rs, self.block_size)
+        self.combR4 = Comb(1356+ss, dp, rs, self.block_size)

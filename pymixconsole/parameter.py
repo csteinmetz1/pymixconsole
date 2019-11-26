@@ -5,14 +5,14 @@ from .util import logger
 
 class Parameter(object):
 
-    def __init__(self, name, value, kind, update=None, units="", minimum=None, maximum=None, options=[], print_precision=1):
+    def __init__(self, name, value, kind, processor=None, units="", minimum=None, maximum=None, options=[], print_precision=1):
 
         self.kind = kind
         self.name = name
-        if update:
-            self.update = update
+        if processor:
+            self.processor = processor
         else:
-            self.update = update
+            self.processor = processor
 
         if   self.kind == "string":
             if len(options) < 1:
@@ -87,10 +87,10 @@ class Parameter(object):
 
         # if there is a processor reference call its update method
         # but only if we have added all parameters first?
-        if self.update and hasattr(self.update.parameters, self.name):
+        if self.processor and hasattr(self.processor.parameters, self.name):
             log = logger.getLog("console")
             log.info(f"changing {self.name} to {value}.")
-            self.update.update(self.name)
+            self.processor.update(self.name)
 
     def serialize(self, normalize=False, one_hot_encode=False):
 

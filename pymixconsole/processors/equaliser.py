@@ -13,29 +13,33 @@ MAX_Q    =  10.0
 class Equaliser(Processor):
     """ Five band parametreic equaliser ( two shelves and three central bands )
 
+    All gains are set in dB values and range from -32.0 dB to +12.0 dB.
+    This processor is implemented as cascade of five biquad IIR filters
+    that are implemented using the infamous cookbook formulae from RBJ.
+
     """
     def __init__(self, name="Equaliser", block_size=512, sample_rate=44100):
         super().__init__(name, None, block_size, sample_rate)
 
         self.parameters = ParameterList()
         # low shelf parameters ----------------------------------------------------------------------------------------------
-        self.parameters.add(Parameter("low_shelf_gain",      0.0, "float", update=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
-        self.parameters.add(Parameter("low_shelf_freq",     80.0, "float", update=self, minimum=20.0,     maximum=1000.0))
+        self.parameters.add(Parameter("low_shelf_gain",      0.0, "float", processor=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
+        self.parameters.add(Parameter("low_shelf_freq",     80.0, "float", processor=self, minimum=20.0,     maximum=1000.0))
         # first band parameters ---------------------------------------------------------------------------------------------
-        self.parameters.add(Parameter("first_band_gain",     0.0, "float", update=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
-        self.parameters.add(Parameter("first_band_freq",   400.0, "float", update=self, minimum=200.0,    maximum=5000.0))        
-        self.parameters.add(Parameter("first_band_q",        0.7, "float", update=self, minimum=MIN_Q,    maximum=MAX_Q))
+        self.parameters.add(Parameter("first_band_gain",     0.0, "float", processor=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
+        self.parameters.add(Parameter("first_band_freq",   400.0, "float", processor=self, minimum=200.0,    maximum=5000.0))        
+        self.parameters.add(Parameter("first_band_q",        0.7, "float", processor=self, minimum=MIN_Q,    maximum=MAX_Q))
         # second band parameters --------------------------------------------------------------------------------------------
-        self.parameters.add(Parameter("second_band_gain",    0.0, "float", update=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
-        self.parameters.add(Parameter("second_band_freq", 1000.0, "float", update=self, minimum=500.0,    maximum=6000.0))        
-        self.parameters.add(Parameter("second_band_q",       0.7, "float", update=self, minimum=MIN_Q,    maximum=MAX_Q))
+        self.parameters.add(Parameter("second_band_gain",    0.0, "float", processor=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
+        self.parameters.add(Parameter("second_band_freq", 1000.0, "float", processor=self, minimum=500.0,    maximum=6000.0))        
+        self.parameters.add(Parameter("second_band_q",       0.7, "float", processor=self, minimum=MIN_Q,    maximum=MAX_Q))
         # second band parameters --------------------------------------------------------------------------------------------
-        self.parameters.add(Parameter("third_band_gain",     0.0, "float", update=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
-        self.parameters.add(Parameter("third_band_freq",  5000.0, "float", update=self, minimum=1000.0,    maximum=10000.0))        
-        self.parameters.add(Parameter("third_band_q",        0.7, "float", update=self, minimum=MIN_Q,    maximum=MAX_Q))
+        self.parameters.add(Parameter("third_band_gain",     0.0, "float", processor=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
+        self.parameters.add(Parameter("third_band_freq",  5000.0, "float", processor=self, minimum=1000.0,    maximum=10000.0))        
+        self.parameters.add(Parameter("third_band_q",        0.7, "float", processor=self, minimum=MIN_Q,    maximum=MAX_Q))
         # high shelf parameters --------------------------------------------------------------------------------------------
-        self.parameters.add(Parameter("high_shelf_gain",      0.0, "float", update=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
-        self.parameters.add(Parameter("high_shelf_freq",  10000.0, "float", update=self, minimum=20.0,     maximum=20000.0))
+        self.parameters.add(Parameter("high_shelf_gain",      0.0, "float", processor=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
+        self.parameters.add(Parameter("high_shelf_freq",  10000.0, "float", processor=self, minimum=20.0,     maximum=20000.0))
 
         self.bands, self.filters = self.setup_filters()
 
