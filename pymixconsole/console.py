@@ -39,7 +39,7 @@ class Console(object):
         else:
             raise ValueError("Pass either multitrack object or provide all initialization parameters.")
 
-        self.log = logger.createLog("console")
+        self.log = logger.createLog(logger.LOG_NAME)
         self.verbose = verbose
 
         # create each channel of the mix console

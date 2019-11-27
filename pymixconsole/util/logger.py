@@ -1,6 +1,8 @@
 import sys
 import logging
 
+LOG_NAME = "pymixconsole"
+
 def getLog(name):                                                                                        
     return logging.getLogger(name);                                                                                                                                                              
                                                                   

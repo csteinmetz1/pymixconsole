@@ -88,7 +88,7 @@ class Parameter(object):
         # if there is a processor reference call its update method
         # but only if we have added all parameters first?
         if self.processor and hasattr(self.processor.parameters, self.name):
-            log = logger.getLog("console")
+            log = logger.getLog(logger.LOG_NAME)
             log.info(f"changing {self.name} to {value}.")
             self.processor.update(self.name)
 
