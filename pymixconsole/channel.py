@@ -6,6 +6,7 @@ from .processors.gain import Gain
 from .processors.panner import Panner
 from .processors.reverb import Reverb
 from .processors.equaliser import Equaliser
+from .processors.converter import Converter
 
 class Channel():
     def __init__(self, sample_rate, block_size):
@@ -37,14 +38,15 @@ class Channel():
         for processor in self.processors.get_all():
             processor.reset()
 
-    def randomize(self):
+    def randomize(self, shuffle=False):
 
         # randomize each processor configuration
         for processor in self.get_all_processors():   
             processor.randomize()
 
         # randomize settings of core processors only
-        self.processors.shuffle()
+        if shuffle:
+            self.processors.shuffle()
 
     def serialize(self):
 
