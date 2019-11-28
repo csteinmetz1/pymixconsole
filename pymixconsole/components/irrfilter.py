@@ -1,3 +1,5 @@
+from numba import jit, float64
+
 from textwrap import dedent
 import scipy.signal
 import numpy as np
@@ -171,7 +173,7 @@ class IIRfilter(object):
             Filtered input audio.
         """
 
-        if data.ndim < 2: zi_ch = self.zi[:,zi_ch]
+        if data.ndim < 2: zi_ch = self.zi[:,0]
         else:             zi_ch = self.zi
 
         # apply the filter and update the filter state
