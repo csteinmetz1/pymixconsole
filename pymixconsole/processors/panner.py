@@ -1,9 +1,38 @@
+from numba import jit, float64
 import numpy as np
 
 from ..parameter import Parameter
 from ..processor import Processor
 from ..parameter_list import ParameterList
-                  
+
+@jit(nopython=True)
+def n_process(data, L, R):
+    """ Apply panning gains based on chosen pan law.
+
+    Params
+    -------
+    data : ndarrary
+        Input audio data. (samples, channels)
+
+    currently only support max of 2 channels
+
+    Returns
+    -------
+    output_buffer : ndarray
+        Panned input audio. (samples, channels)
+    """
+
+    if data.ndim < 2:
+        # apply the channel gains
+        output_buffer_L = L * data[:,L_ch]
+        output_buffer_R = R * data[:,R_ch]
+    else:
+        # apply the channel gains
+        output_buffer_L = L * data[:,0]
+        output_buffer_R = R * data[:,1]
+
+    return output_buffer_L, output_buffer_R
+
 class Panner(Processor):
     """ Simple stereo panner.
 
@@ -58,34 +87,8 @@ class Panner(Processor):
             raise ValueError(f"Invalid pan_law {self.parameters.pan_law.value}.")
 
     def process(self, data):
-        """ Apply panning gains based on chosen pan law.
-
-        Params
-        -------
-        data : ndarrary
-            Input audio data. (samples, channels)
-
-        currently only support max of 2 channels
-
-        Returns
-        -------
-        output_buffer : ndarray
-            Panned input audio. (samples, channels)
-        """
-
-        if data.ndim < 2:
-            data = np.expand_dims(data, axis=1)
-            L_ch = 0 
-            R_ch = 0
-        else:
-            L_ch = 0
-            R_ch = 1
-
-        # apply the channel gains
-        self._output_buffer[:,0] = self._L * data[:,L_ch]
-        self._output_buffer[:,1] = self._R * data[:,R_ch]
-
-        return self._output_buffer
+        L, R = n_process(data, self._L, self._R)
+        return np.stack((L, R), axis=1)
 
     def update(self, parameter_name):
         self._calculate_pan_coefficents()
