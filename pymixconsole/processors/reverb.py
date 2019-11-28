@@ -20,19 +20,18 @@ class Reverb(Processor):
 
         self.update(None)
 
-    def process(self, x):
+    def process(self, data):
 
-        output = np.empty((len(x), 2))
+        # we assume input data is stereo
 
-        # apply input gain 
-        #x *= self.db2linear(self.parameters["in_gain"])
+        output = np.empty((len(data), 2))
 
-        yL1 = self.allpassL1.process(x)
+        yL1 = self.allpassL1.process(data)
         yL2 = self.allpassL2.process(yL1)
         yL3 = self.allpassL3.process(yL2)
         yL4 = self.allpassL4.process(yL3)
 
-        yR1 = self.allpassR1.process(x)
+        yR1 = self.allpassR1.process(data)
         yR2 = self.allpassR2.process(yR1)
         yR3 = self.allpassR3.process(yR2)
         yR4 = self.allpassR4.process(yR3)
@@ -50,8 +49,8 @@ class Reverb(Processor):
         wet_g = self.parameters.wet_dry.value
         dry_g = 1 - self.parameters.wet_dry.value
 
-        output[:,0] = (wet_g * (xL1 + xL3 - xL2 - xL4)) + (dry_g * x)
-        output[:,1] = (wet_g * (xR1 + xR3 - xR2 - xR4)) + (dry_g * x)
+        output[:,0] = (wet_g * (xL1 + xL3 - xL2 - xL4)) + (dry_g * data)
+        output[:,1] = (wet_g * (xR1 + xR3 - xR2 - xR4)) + (dry_g * data)
 
         return output
 
