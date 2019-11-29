@@ -24,8 +24,8 @@ def n_process(data, L, R):
 
     if data.ndim < 2:
         # apply the channel gains
-        output_buffer_L = L * data[:,L_ch]
-        output_buffer_R = R * data[:,R_ch]
+        output_buffer_L = L * data
+        output_buffer_R = R * data
     else:
         # apply the channel gains
         output_buffer_L = L * data[:,0]
