@@ -41,7 +41,7 @@ def n_process(data, buffer, threshold, attack_time, release_time, ratio, makeup_
         c[i] = np.power(10.0, (makeup_gain - y_l[i]) / 20.0)
         yL_prev = y_l[i]
 
-    if data.ndim == 2:
+    if False:
         data[:,0] *= c
         data[:,1] *= c
     else:
@@ -58,11 +58,11 @@ class Compressor(Processor):
 
         self.parameters = ParameterList()
         # low shelf parameters ----------------------------------------------------------------------------------------------
-        self.parameters.add(Parameter("threshold",   -46.0, "float", units="dB", processor=self, minimum=-80.0, maximum=0.0))
+        self.parameters.add(Parameter("threshold",     0.0, "float", units="dB", processor=self, minimum=-80.0, maximum=0.0))
         self.parameters.add(Parameter("attack_time",   10.0, "float", units="ms", processor=self, minimum=0.001, maximum=1000.0))
         self.parameters.add(Parameter("release_time", 100.0, "float", units="ms", processor=self, minimum=0.001, maximum=4000.0))
-        self.parameters.add(Parameter("ratio",         100.0, "float",             processor=self, minimum=  1.0, maximum=100.0))
-        self.parameters.add(Parameter("makeup_gain",   6.0, "float", units="dB", processor=self, minimum=-80.0, maximum=24.0))
+        self.parameters.add(Parameter("ratio",         2.0, "float",             processor=self, minimum=  1.0, maximum=100.0))
+        self.parameters.add(Parameter("makeup_gain",   6.0, "float", units="dB", processor=self, minimum=-12.0, maximum=24.0))
 
         self.yL_prev = 0
 

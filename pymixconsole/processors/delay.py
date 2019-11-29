@@ -39,8 +39,8 @@ class Delay(Processor):
             self.parameters = ParameterList()
             self.parameters.add(Parameter("delay",  10000, "int",   processor=self, units="samples", minimum=0, maximum=sample_rate))
             self.parameters.add(Parameter("feedback", 0.6, "float", processor=self, units="samples", minimum=0, maximum=1.0))
-            self.parameters.add(Parameter("dry_mix",  0.8, "float", processor=self, units="samples", minimum=0, maximum=1.0))
-            self.parameters.add(Parameter("wet_mix",  0.5, "float", processor=self, units="samples", minimum=0, maximum=1.0))
+            self.parameters.add(Parameter("dry_mix",  0.9, "float", processor=self, units="samples", minimum=0, maximum=1.0))
+            self.parameters.add(Parameter("wet_mix",  0.0, "float", processor=self, units="samples", minimum=0, maximum=1.0))
 
         self.buffer = np.zeros(sample_rate)
         self.read_idx = 0

@@ -5,7 +5,7 @@ from ..parameter import Parameter
 from ..parameter_list import ParameterList
 from ..components.irrfilter import IIRfilter
 
-MIN_GAIN = -32.0
+MIN_GAIN = -12.0
 MAX_GAIN =  12.0
 MIN_Q    =   0.1
 MAX_Q    =  10.0
