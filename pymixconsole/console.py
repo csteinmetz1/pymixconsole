@@ -22,6 +22,10 @@ class Console(object):
         channel blocks into the `process_block()` function, or
         optionally load a multitrack object later. 
 
+        It would be cool to have in here a method that will draw a 
+        diagram of the mixing console routing and the parameters of 
+        each processor.
+
         """
 
         if multitrack:
@@ -71,11 +75,11 @@ class Console(object):
         """
 
         if block.ndim == 1:
-            output_buffer = np.empty((block.shape[0], 2))
+            output_buffer = np.zeros((block.shape[0], 2))
             block = np.expand_dims(block, -1)
             num_block_channels = 1
         else:
-            output_buffer = np.empty((block.shape[0], 2))	
+            output_buffer = np.zeros((block.shape[0], 2))	
             num_block_channels = block.shape[1]
 
         for ch_idx in np.arange(num_block_channels):
