@@ -173,8 +173,10 @@ class IIRfilter(object):
             Filtered input audio.
         """
 
-        if data.ndim < 2: zi_ch = self.zi[:,0]
-        else:             zi_ch = self.zi
+        if data.ndim < 2 and self.zi.ndim > 1:
+            zi_ch = self.zi[:,0]
+        else:              
+            zi_ch = self.zi
 
         # apply the filter and update the filter state
         y, self.zi = scipy.signal.lfilter(self.b, self.a, np.squeeze(data), axis=0, zi=zi_ch)
