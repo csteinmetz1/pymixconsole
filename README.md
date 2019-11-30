@@ -11,6 +11,7 @@ Setup a mixing console with a set of tracks from a multitrack project and apply 
 
 ## Basic processing
 ``` python
+import glob
 import soundfile as sf
 import pymixconsole as pymc
 
@@ -46,79 +47,64 @@ multitrack = pymc.Multitrack(data=data, rate=rate)
 
 ### Gain
 
-| Parameter     |  Min. | Max. | Default | Units | Type  | Values | 
-| ------------- | ----- | ---- | ------- | ----- | ----- | ------ |
-| `gain_val`    |  -120 | 12.0 |  0.0    | dB    | float |        |
+| Parameter     |  Min. | Max. | Default | Units | Type  | Options | 
+| ------------- | ----- | ---- | ------- | ----- | ----- | ------- |
+| gain          | -80.0 | 24.0 |  0.0    | dB    | float |         |
 
 ### Panner
 
 | Parameter    |  Min. | Max. | Default  | Units   | Type   | Values | 
 | ------------ | ----- | ---- | -------- | ------- | ------ | ------ |
-| `pan_val`    |  0.0  | 1.0  |  0.5     |         | float  |        | 
-| `n_outputs`  |    2  |   2  |   2      | outputs | int    |        | 
-| `pan_law`    |       |      | "-4.5dB" |         | string | "linear", "constant_power", "-4.5dB" | 
+|  pan         |  0.0  | 1.0  |  0.5     |         | float  |        | 
+|  outputs     |    2  |   2  |   2      | outputs | int    |        | 
+|  pan_law     |       |      | "-4.5dB" |         | string | "linear", "constant_power", "-4.5dB" | 
 
 ### Equalizer
 
-| Parameter     |  Min. | Max. | Default  | Units   | Type   | Values | 
-| ------------- | ----- | ---- | -------- | ------- | ------ | ------ |
-| `in_gain`     |  -120 | 12.0 |  0.5     |  dB     | float  |        | 
-| `out_gain`    |  -120 | 12.0 |  0.5     |  dB     | float  |        | 
-| `bands`       |       |      |          |         |        |        | 
-
-| Band          | Parameter     |  Min. | Max.    | Default      | Units   | Type   | Values |
-| ------------- | ------------- | ----- | ------- | ------------ | ------- | ------ | ------ |
-| `low_shelf`   |               |       |         |              |         |        |        |
-|               | `filter_type` |       |         | "low_shelf"  |         | string |        |
-|               | `gain`        | -12.0 | 12.0    |  0.0         |  dB     | float  |        |
-|               | `Fc`          |  22.0 | 1000.0  | 80.0         |  Hz     | float  |        |
-|               | `Q`           |   0.1 |   10.0  |  0.707       |         | float  |        |
-| `first_band`  |               |       |         |              |         |        |        |
-|               | `filter_type` |       |         | "peaking"    |         | string |        |
-|               | `gain`        | -12.0 | 12.0    |   0.0        |  dB     | float  |        |
-|               | `Fc`          |  82.0 | 3900.0  | 200.0        |  Hz     | float  |        |
-|               | `Q`           |   0.1 |   10.0  |   0.707      |         | float  |        |
-| `second_band` |               |       |         |              |         |        |        |
-|               | `filter_type` |       |         | "peaking"    |         | string |        |
-|               | `gain`        | -12.0 | 12.0    |   0.0        |  dB     | float  |        |
-|               | `Fc`          | 180.0 | 4700.0  | 1000.0       |  Hz     | float  |        |
-|               | `Q`           |   0.1 |   10.0  |   0.707      |         | float  |        |
-| `third_band`  |               |       |         |              |         |        |        |
-|               | `filter_type` |       |         | "peaking"    |         | string |        |
-|               | `gain`        | -12.0 | 12.0    |   0.0        |  dB     | float  |        |
-|               | `Fc`          | 220.0 | 10000.0 | 5000.0       |  Hz     | float  |        |
-|               | `Q`           |   0.1 |   10.0  |   0.707      |         | float  |        |
-| `high_shelf`  |               |       |         |              |         |        |        |
-|               | `filter_type` |       |         | "high_shelf" |         | string |        |
-|               | `gain`        | -12.0 | 12.0    |  0.0         |  dB     | float  |        |
-|               | `Fc`          | 580.0 | 20000.0 | 10000.0      |  Hz     | float  |        |
-|               | `Q`           |   0.1 |   10.0  |  0.707       |         | float  |        |
-
-```python
-import numpy as np
-import pymixconsole as pymc
-
-# crate an EQ processor with default params
-eq = pymc.processors.Equaliser()
-
-# decrease the input gain
-eq.parameters["in_gain"] = -3.0
-
-# change the low-shelf gain
-eq.parameters["bands"]["low_shelf"]["gain"] = 6.0
-
-# and increase the cutoff frequency
-eq.parameters["bands"]["low_shelf"]["Fc"] = 200.0
-
-# process a block of audio samples
-output = eq.process(np.random.rand(512))
-```
+| Parameter        |  Min.     | Max.     | Default  | Units   | Type   | Values | 
+| ---------------- | --------- | -------- | -------- | ------- | ------ | ------ |
+| low_shelf_gain   |     -24.0 |     24.0 |      0.0 | dB      | float  |        |
+| low_shelf_freq   |      20.0 |   1000.0 |     80.0 | Hz      | float  |        |
+| first_band_gain  |     -24.0 |     24.0 |      0.0 | dB      | float  |        |
+| first_band_freq  |     200.0 |   5000.0 |    400.0 | Hz      | float  |        |
+| first_band_q     |       0.1 |     10.0 |      0.7 |         | float  |        |
+| second_band_gain |     -24.0 |     24.0 |      0.0 | dB      | float  |        |
+| second_band_freq |     500.0 |   6000.0 |   1000.0 | Hz      | float  |        |
+| second_band_q    |       0.1 |     10.0 |      0.7 |         | float  |        |
+| third_band_gain  |     -24.0 |     24.0 |      0.0 | dB      | float  |        |
+| third_band_freq  |    2000.0 |  10000.0 |   5000.0 | Hz      | float  |        |
+| third_band_q     |       0.1 |     10.0 |      0.7 |         | float  |        |
+| high_shelf_gain  |     -24.0 |     24.0 |      0.0 | dB      | float  |        |
+| high_shelf_freq  |    8000.0 |  20000.0 |  10000.0 | Hz      | float  |        |
 
 ### Delay
 
+| Parameter        |  Min.     | Max.     | Default  | Units   | Type   | Values | 
+| ---------------- | --------- | -------- | -------- | ------- | ------ | ------ |
+| delay            |         0 |    65536 |     5000 | samples | int    |        |
+| feedback         |       0.0 |      1.0 |      0.3 |         | float  |        |
+| dry_mix          |       0.0 |      1.0 |      0.9 |         | float  |        |
+| wet_mix          |       0.0 |      1.0 |      0.0 |         | float  |        |
+
 ### Compressor
 
+| Parameter        |  Min.     | Max.     | Default  | Units   | Type   | Values | 
+| ---------------- | --------- | -------- | -------- | ------- | ------ | ------ |
+| threshold        |     -80.0 |      0.0 |      0.0 |      dB | float  |        |
+| attack_time      |     0.001 |    500.0 |     10.0 |      ms | float  |        |
+| release_time     |       0.0 |      1.0 |    100.0 |      ms | float  |        |
+| ratio            |       1.0 |    100.0 |      2.0 |         | float  |        |
+| makeup_gain      |     -12.0 |     24.0 |      0.0 |      dB | float  |        |
+
 ### Algorithmic reverb
+
+| Parameter        |  Min.     | Max.     | Default  | Units   | Type   | Values | 
+| ---------------- | --------- | -------- | -------- | ------- | ------ | ------ |
+| room_size        |       0.1 |      1.0 |      0.5 |         | float  |        |
+| damping          |       0.0 |      1.0 |      1.0 |         | float  |        |
+| dry_mix          |       0.0 |      1.0 |      0.9 |         | float  |        |
+| wet_mix          |       0.0 |      1.0 |      0.1 |         | float  |        |
+| stereo_spread    |         0 |      100 |       23 |         | int    |        |
 
 ## Dependancies
 - SciPy (https://www.scipy.org/)

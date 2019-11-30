@@ -15,8 +15,9 @@ class Reverb(Processor):
         self.parameters = ParameterList()
         self.parameters.add(Parameter("room_size",     0.5, "float", processor=self, minimum=0.0, maximum=1.0))
         self.parameters.add(Parameter("damping",       0.0, "float", processor=self, minimum=0.0, maximum=1.0))
-        self.parameters.add(Parameter("wet_dry",       0.1, "float", processor=self, minimum=0.0, maximum=1.0))
-        self.parameters.add(Parameter("stereo_spread",  23, "int",   processor=self, minimum=0,   maximum=50))
+        self.parameters.add(Parameter("dry_mix",       0.9, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("wet_mix",       0.1, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("stereo_spread",  23, "int",   processor=self, minimum=0,   maximum=100))
 
         self.update(None)
 
@@ -46,8 +47,8 @@ class Reverb(Processor):
         xR3 = self.combR3.process(yR4)
         xR4 = self.combR4.process(yR4)
 
-        wet_g = self.parameters.wet_dry.value
-        dry_g = 1 - self.parameters.wet_dry.value
+        wet_g = self.parameters.wet_mix.value
+        dry_g = self.parameters.dry_mix.value
 
         output[:,0] = (wet_g * (xL1 + xL3 - xL2 - xL4)) + (dry_g * data)
         output[:,1] = (wet_g * (xR1 + xR3 - xR2 - xR4)) + (dry_g * data)

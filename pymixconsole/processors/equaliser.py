@@ -5,8 +5,8 @@ from ..parameter import Parameter
 from ..parameter_list import ParameterList
 from ..components.irrfilter import IIRfilter
 
-MIN_GAIN = -12.0
-MAX_GAIN =  12.0
+MIN_GAIN = -24.0
+MAX_GAIN =  24.0
 MIN_Q    =   0.1
 MAX_Q    =  10.0
 
@@ -33,13 +33,13 @@ class Equaliser(Processor):
         self.parameters.add(Parameter("second_band_gain",    0.0, "float", processor=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
         self.parameters.add(Parameter("second_band_freq", 1000.0, "float", processor=self, minimum=500.0,    maximum=6000.0))        
         self.parameters.add(Parameter("second_band_q",       0.7, "float", processor=self, minimum=MIN_Q,    maximum=MAX_Q))
-        # second band parameters --------------------------------------------------------------------------------------------
+        # third band parameters --------------------------------------------------------------------------------------------
         self.parameters.add(Parameter("third_band_gain",     0.0, "float", processor=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
-        self.parameters.add(Parameter("third_band_freq",  5000.0, "float", processor=self, minimum=1000.0,    maximum=10000.0))        
+        self.parameters.add(Parameter("third_band_freq",  5000.0, "float", processor=self, minimum=2000.0,    maximum=10000.0))        
         self.parameters.add(Parameter("third_band_q",        0.7, "float", processor=self, minimum=MIN_Q,    maximum=MAX_Q))
         # high shelf parameters --------------------------------------------------------------------------------------------
         self.parameters.add(Parameter("high_shelf_gain",      0.0, "float", processor=self, minimum=MIN_GAIN, maximum=MAX_GAIN))
-        self.parameters.add(Parameter("high_shelf_freq",  10000.0, "float", processor=self, minimum=20.0,     maximum=20000.0))
+        self.parameters.add(Parameter("high_shelf_freq",  10000.0, "float", processor=self, minimum=8000.0,     maximum=20000.0))
 
         self.bands, self.filters = self.setup_filters()
 
