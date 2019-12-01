@@ -8,6 +8,7 @@ from .processors.panner import Panner
 from .processors.reverb import Reverb
 from .processors.equaliser import Equaliser
 from .processors.converter import Converter
+from .processors.compressor import Compressor
 
 class Channel():
     def __init__(self, sample_rate, block_size):
@@ -21,8 +22,9 @@ class Channel():
         # core insert processors (order is shuffled on randomize)                           
         self.processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)
         self.processors.add(Equaliser(name="eq"))
-        self.processors.add(Delay(name="delay"))
-        self.processors.add(Reverb(name="reverb"))
+        self.processors.add(Compressor(name="compressor"))
+        #self.processors.add(Delay(name="delay"))
+        #self.processors.add(Reverb(name="reverb"))
 
         # post-processors (order is not shuffled)
         self.post_processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)

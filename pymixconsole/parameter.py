@@ -4,8 +4,9 @@ import numpy as np
 from .util import logger
 
 class Parameter(object):
+    """ Processor parameter object. """
 
-    def __init__(self, name, value, kind, processor=None, units="", minimum=None, maximum=None, options=[], print_precision=1):
+    def __init__(self, name, value, kind, processor=None, units="", minimum=None, maximum=None, options=[], print_precision=1, **kwargs):
 
         self.kind = kind
         self.name = name
@@ -33,11 +34,18 @@ class Parameter(object):
         self._default = value
         self.print_precision = print_precision
 
+        for key, val in kwargs.items():
+            setattr(self, key, val)
+
     def __repr__(self):
         if self.kind == "int":
             return f"{self.name} {self.value:d} kind: {self.kind} ({self.min:d} to {self.max:d})"
         elif self.kind == "float":
-            return f"{self.name} {self.value:.{self.print_precision}f} {self.units} kind: '{self.kind}' default: {self._default:.{self.print_precision}f} {self.units} range: ({self.min:.{self.print_precision}f} to {self.max:.{self.print_precision}f})"
+            s = (f"{self.name} {self.value:.{self.print_precision}f} {self.units}",
+                 f"kind: '{self.kind}'",
+                 f"default: {self._default:.{self.print_precision}f} {self.units}",
+                 f"range: ({self.min:.{self.print_precision}f} to {self.max:.{self.print_precision}f})")
+            return s  
         elif self.kind == "string":
             return f"{self.name} {self.value} kind: {self.kind} options: ({self.options})"
 
@@ -55,7 +63,39 @@ class Parameter(object):
     def reset(self):
         self.value = self._default
 
-    def randomize(self, distribution="uniform", p=[]):
+    def randomize(self, distribution="default"):
+        """ Randomize the value of a parameter.
+
+        By default this will select a value from a uniform distribution 
+        over the range [min, max] if it is a `float`, it will use a uniform 
+        distriubtion over [min, max] for an `int`, and it will 
+        selection an index from the options of [0, len(options)-1] if 
+        it is a `string`. 
+
+        For many parameters a uniform distribution over [min, max] is 
+        a very bad choice, and instead we may want to sample the new value
+        from a normal distribution (gaussian). In this cause we can set `mu` 
+        and `sigma` values for a float type parameter when we create it. 
+        This will force the use of normal distriubtion. If the value 
+        drawn is beyond the acceptable range it is simply capped.
+
+        Example for randomizing a gain parameter centered at 0dB
+        >>> gain.randomize(distribution="normal", mu=0.0, sigma=4.0)
+
+        """
+
+        if distribution == "default":
+            if   self.kind == "int":
+                distribution = "uniform"
+            elif self.kind == "float":
+                if (hasattr(self, "mu") and hasattr(self, "sigma")):
+                    distribution = "normal"
+                else:
+                    # if mu and sigma omitted we use uniform
+                    distribution = "uniform"
+            elif self.kind == "string":
+                distribution = "uniform"
+
         if   distribution == "uniform":
             if   self.kind == "int" and self.min != self.max:
                 self.value = np.random.randint(self.min, high=self.max)
@@ -65,12 +105,16 @@ class Parameter(object):
                 self.value = np.random.choice(self.options)
         elif distribution == "normal":
             if self.kind == "int":
-                raise NotImplementedError()
+                raise NotImplementedError("Can only use 'uniform' for int types not 'normal'.")
             elif self.kind == "float":
-                mu = self.range/2
-                sigma = (mu/3)
-                # this may not make a lot of sense
-                self.value = np.random.normal(mu, sigma) - np.abs(self.min)
+                sampled_value = np.random.normal(self.mu,self.sigma)
+                # check if it exceeds the bounds and then cap it
+                if sampled_value > self.max:
+                    sampled_value = self.max
+                elif sampled_value < self.min:
+                    sampled_value = self.min
+                # finally set the new value
+                self.value = sampled_value
             if self.kind == "string":
                 raise NotImplementedError()
         else:
@@ -89,7 +133,11 @@ class Parameter(object):
         # but only if we have added all parameters first?
         if self.processor and hasattr(self.processor.parameters, self.name):
             log = logger.getLog(logger.LOG_NAME)
-            log.info(f"changing {self.name} to {value}.")
+            if self.kind == "float":
+                s = f"changing {self.processor.name} {self.name} to {value:.{self.print_precision}f} {self.units}"
+            else:
+                s = f"changing {self.name} to {value}."
+            log.info(s)
             self.processor.update(self.name)
 
     def serialize(self, normalize=False, one_hot_encode=False):

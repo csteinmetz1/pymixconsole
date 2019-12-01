@@ -6,6 +6,18 @@ from .channel import Channel
 from .util import logger
 
 class Console(object):
+    """ Top level interface for the mixing console. 
+    
+    A mix console contains a number of channels, 
+    each channel has a set of processors.  
+
+    Calling the process function of a console will
+    take the audio for each channel and pass it through
+    each process method of each processor, at the end summing
+    all of the the outputs into the final mixdown. 
+
+    """
+
     def __init__(self, multitrack=None, block_size=512, sample_rate=44100, num_channels=1, verbose=False):
         """ Create a mixing console.
 

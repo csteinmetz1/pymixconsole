@@ -48,7 +48,7 @@ class Panner(Processor):
         super().__init__(name, None, block_size, sample_rate) 
 
         self.parameters = ParameterList()
-        self.parameters.add(Parameter("pan", 0.5, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("pan", 0.5, "float", processor=self, minimum=0.0, maximum=1.0, mu=0.5, sigma=0.2))
         self.parameters.add(Parameter("outputs", 2, "int", processor=self, minimum=2, maximum=2))
         self.parameters.add(Parameter("pan_law", "-4.5dB", "string", processor=self, options=["linear", "constant_power", "-4.5dB"]))
 

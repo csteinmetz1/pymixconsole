@@ -15,9 +15,9 @@ class Processor():
         for name, parameter in self.parameters.items():
             parameter.reset()
 
-    def randomize(self, distribution="uniform"):
+    def randomize(self):
         for name, parameter in self.parameters:
-            parameter.randomize(distribution=distribution)
+            parameter.randomize()
 
     @property
     def parameters(self):
