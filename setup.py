@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -11,7 +11,7 @@ setup(name='pymixconsole',
       url='https://github.com/csteinmetz1/pymixconsole',
       author='Christian Steinmetz',
       author_email='cjstein@clemson.edu',
-      packages=['pymixconsole'],
+      packages=find_packages(),
       install_requires=['scipy>=1.0.1',
                         'numpy>=1.14.2'],
       classifiers=(
