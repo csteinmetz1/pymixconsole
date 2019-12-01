@@ -6,10 +6,16 @@ dist/
 # junk
 .DS_Store
 
+# docs
+_build
+_static
+_templates
+
 # dev
 testing.py
 *.mp3
 __pycache__
-multitrack/
+signals/
 .vscode
 env/
+cython/

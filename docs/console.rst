@@ -1,0 +1,6 @@
+Console
+=========
+
+.. automodule:: pymixconsole
+    :members:
+
