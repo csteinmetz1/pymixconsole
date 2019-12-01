@@ -1,12 +1,10 @@
 import warnings
 import numpy as np
-import soundfile as sf
 
 class Multitrack():
     """ Multitrack audio object 
     
-    Load audio either directly as a numpy array with shape 
-    [samples, channels] or provide a list of audio files to be loaded
+    Load audio either directly as a numpy array with shape [samples, channels].
 
     All channels must have the same number of samples.
     
@@ -21,10 +19,12 @@ class Multitrack():
         self.rate = rate # deal with this later
 
         # if files are given load them
-        if self.files is not None:
-            self._load_tracks_from_file()
-        else:
-            self._load_tracks_from_array()
+        #if self.files is not None:
+        #    self._load_tracks_from_file()
+        #else:
+        #    self._load_tracks_from_array()
+
+        self._load_tracks_from_array()
 
         # calculate number of full blocks
         self.num_blocks = int(np.floor(self.num_samples / self.block_size))
@@ -61,32 +61,30 @@ class Multitrack():
         
         return [max_num_samples, total_num_channels]
 
-    def _load_tracks_from_file(self):
-
-        self.num_samples, self.num_channels = self._determine_array_size_from_file(self.files)
-
-        self.data = np.empty([self.num_samples, self.num_channels])
-
-        self.loaded_channels = 0
-        
-        for track_file in self.files:
-            track_data, track_rate = sf.read(track_file) # load audio (with shape (samples, channels))
-            #print(track_data.shape)
-
-            pad_size = self.num_samples - track_data.shape[0]
-            
-            if track_rate != self.rate:
-                raise RuntimeError(f"Track has fs={track_rate}, but project has fs={self.rate}.")
-
-            if len(track_data.shape) > 1:
-                #print("Loaded stereo track. Splitting to mono...")
-                for ch in range(track_data.shape[1]):
-
-                    self.data[:,self.loaded_channels] = np.pad(track_data[:,ch], (0,pad_size), 'constant')
-                    self.loaded_channels += 1
-            else:
-                self.data[:,self.loaded_channels] = np.pad(track_data, (0,pad_size), 'constant')
-                self.loaded_channels += 1
+    #def _load_tracks_from_file(self):
+    #
+    #    self.num_samples, self.num_channels = self._determine_array_size_from_file(self.files)
+    #
+    #    self.data = np.empty([self.num_samples, self.num_channels])
+    #
+    #    self.loaded_channels = 0
+    #    
+    #    for track_file in self.files:
+    #        track_data, track_rate = sf.read(track_file) # load audio (with shape (samples, channels))
+    #
+    #        pad_size = self.num_samples - track_data.shape[0]
+    #        
+    #        if track_rate != self.rate:
+    #            raise RuntimeError(f"Track has fs={track_rate}, but project has fs={self.rate}.")
+    #
+    #        if len(track_data.shape) > 1:
+    #            for ch in range(track_data.shape[1]):
+    #
+    #                self.data[:,self.loaded_channels] = np.pad(track_data[:,ch], (0,pad_size), 'constant')
+    #                self.loaded_channels += 1
+    #        else:
+    #            self.data[:,self.loaded_channels] = np.pad(track_data, (0,pad_size), 'constant')
+    #            self.loaded_channels += 1
 
     def _load_tracks_from_array(self):
         self.num_channels = self.data[1]
