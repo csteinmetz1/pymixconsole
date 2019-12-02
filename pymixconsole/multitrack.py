@@ -87,5 +87,5 @@ class Multitrack():
     #            self.loaded_channels += 1
 
     def _load_tracks_from_array(self):
-        self.num_channels = self.data[1]
-        self.num_samples  = self.data[0]
+        self.num_channels = self.data.shape[1]
+        self.num_samples  = self.data.shape[0]
