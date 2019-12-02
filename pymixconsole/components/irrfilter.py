@@ -173,7 +173,8 @@ class IIRfilter(object):
             Filtered input audio.
         """
 
-        if data.ndim <= 2 and self.zi.ndim > 1:
+        # this logic still needs to be improved
+        if data.ndim < 2 and self.zi.ndim > 1:
             zi_ch = self.zi[:,0]
         else:              
             zi_ch = self.zi
