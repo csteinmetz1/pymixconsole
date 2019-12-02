@@ -86,4 +86,6 @@ class Compressor(Processor):
 
         return data
 
-
+    def update(self):
+        
+        self.yL_prev = 0
