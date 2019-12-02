@@ -24,7 +24,7 @@ class IIRfilter(object):
         Shape of the filter.
     """
 
-    def __init__(self, G, Q, fc, rate, filter_type, passband_gain=1.0, n_channels=1):
+    def __init__(self, G, Q, fc, rate, filter_type, passband_gain=1.0, n_channels=2):
         self.__G  = G
         self.__Q  = Q
         self.__fc = fc
@@ -173,7 +173,7 @@ class IIRfilter(object):
             Filtered input audio.
         """
 
-        if data.ndim < 2 and self.zi.ndim > 1:
+        if data.ndim <= 2 and self.zi.ndim > 1:
             zi_ch = self.zi[:,0]
         else:              
             zi_ch = self.zi
