@@ -6,6 +6,7 @@ from .processors.gain import Gain
 from .processors.delay import Delay
 from .processors.panner import Panner
 from .processors.reverb import Reverb
+from .processors.inverter import Inverter
 from .processors.equaliser import Equaliser
 from .processors.converter import Converter
 from .processors.compressor import Compressor
@@ -18,6 +19,7 @@ class Channel():
         # pre-processors (order is not shuffled)
         self.pre_processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)
         self.pre_processors.add(Gain(name="pre-gain"))
+        self.pre_processors.add(Inverter(name="polarity-inverter"))
 
         # core insert processors (order is shuffled on randomize)                           
         self.processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)

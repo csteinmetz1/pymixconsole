@@ -3,6 +3,8 @@ import numpy as np
 
 from .util import logger
 
+kinds = ["string", "int", "float", "bool"]
+
 class Parameter(object):
     """ Processor parameter object. """
 
@@ -95,7 +97,8 @@ class Parameter(object):
                     distribution = "uniform"
             elif self.kind == "string":
                 distribution = "uniform"
-
+            elif self.kind == "bool":
+                distribution = "uniform"
         if   distribution == "uniform":
             if   self.kind == "int" and self.min != self.max:
                 self.value = np.random.randint(self.min, high=self.max)
@@ -103,6 +106,8 @@ class Parameter(object):
                 self.value = (np.random.rand() * self.range) + self.min
             elif self.kind == "string":
                 self.value = np.random.choice(self.options)
+            elif self.kind == "bool":
+                self.value = np.random.choice([True, False])
         elif distribution == "normal":
             if self.kind == "int":
                 raise NotImplementedError("Can only use 'uniform' for int types not 'normal'.")
@@ -116,6 +121,8 @@ class Parameter(object):
                 # finally set the new value
                 self.value = sampled_value
             if self.kind == "string":
+                raise NotImplementedError()
+            if self.kind == "bool":
                 raise NotImplementedError()
         else:
             raise ValueError(f"Invalid distribtuion: {distribution}.")
@@ -167,8 +174,8 @@ class Parameter(object):
     
     @kind.setter
     def kind(self, kind):
-        if kind not in ["string", "int", "float"]:
-            raise ValueError("Invalid kind. Must be 'string', 'int', or 'float'.")
+        if kind not in kinds:
+            raise ValueError(f"Invalid kind. Must be one of {kinds}.")
         self._kind = kind
 
     def db2linear(self):
