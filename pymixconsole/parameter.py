@@ -150,10 +150,12 @@ class Parameter(object):
                 val[index] = 1
             else:
                 val = self.value
-
         else:
             if normalize:
-                val = self.value / self.max
+                if  self.max - self.min == 0:
+                    val = 0
+                else:
+                    val = (self.value - self.min) / (self.max - self.min)
             else:
                 val = self.value
         

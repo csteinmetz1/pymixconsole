@@ -20,9 +20,9 @@ class ParameterList():
         if hasattr(self, parameter.name):
             raise ValueError("parameter names must be unique!")
 
-    def serialize(self):
+    def serialize(self, **kwargs):
         serialized_parameters = {}
         for name, parameter in self:
-            serialized_parameters[parameter.name] = parameter.serialize()
+            serialized_parameters[parameter.name] = parameter.serialize(**kwargs)
 
         return serialized_parameters
