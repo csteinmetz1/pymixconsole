@@ -3,9 +3,10 @@ import warnings
 import numpy as np
 
 from .channel import Channel
+from .bus import Bus
 from .util import logger
 
-class Console(object):
+class Console:
     """ Top level interface for the mixing console. 
     
     A mix console contains a number of channels, 
@@ -18,7 +19,7 @@ class Console(object):
 
     """
 
-    def __init__(self, multitrack=None, block_size=512, sample_rate=44100, num_channels=1, verbose=False):
+    def __init__(self, multitrack=None, block_size=512, sample_rate=44100, num_channels=1, num_busses=1, verbose=False):
         """ Create a mixing console.
 
         There are two options to intialize a console.
@@ -55,6 +56,7 @@ class Console(object):
         else:
             raise ValueError("Pass either multitrack object or provide all initialization parameters.")
 
+        self.num_busses = num_busses
         self.log = logger.createLog(logger.LOG_NAME)
         self.verbose = verbose
 
@@ -62,6 +64,14 @@ class Console(object):
         self.channels = []
         for ch_idx in range(self.num_channels):
             self.channels.append(Channel(self.sample_rate, self.block_size))
+
+        # setup some FX busses
+        self.busses = []
+        sends = np.zeros(self.num_channels)
+        self.busses.append(Bus(self.sample_rate, self.block_size, self.num_channels))
+
+        # setup the master bus (which is a special kind of bus)
+        self.master = Bus(self.sample_rate, self.block_size, self.num_channels + self.num_busses, master=True)
 
     def set_console_parameters(self):
         pass
@@ -86,18 +96,30 @@ class Console(object):
         
         """
 
+        master_buffer = np.zeros((block.shape[0], 2))
+        bus_buffer    = np.zeros((block.shape[0], 2, self.num_busses))
+        ch_buffer     = np.zeros((block.shape[0], 2, self.num_channels))
+
         if block.ndim == 1:
-            output_buffer = np.zeros((block.shape[0], 2))
+            ch_buffer = np.zeros((block.shape[0], 2, self.num_channels))
             block = np.expand_dims(block, -1)
             num_block_channels = 1
         else:
-            output_buffer = np.zeros((block.shape[0], 2))	
+            ch_buffer = np.zeros((block.shape[0], 2, self.num_channels))	
             num_block_channels = block.shape[1]
 
+        # apply channel processing
         for ch_idx in np.arange(num_block_channels):
-            output_buffer += self.channels[ch_idx].process(block[:,ch_idx])
+            ch_buffer[:,:,ch_idx] = self.channels[ch_idx].process(block[:,ch_idx])
 
-        return output_buffer
+        # take the outputs of all channels to apply bus processing
+        for bus_idx in np.arange(self.num_busses):
+            bus_buffer[:,:,bus_idx] = self.busses[bus_idx].process(ch_buffer)
+
+        # finally combine channel and bus outputs for the master bus
+        master_buffer = self.master.process(np.concatenate((ch_buffer, bus_buffer), axis=2))
+
+        return master_buffer
 
     def downmix_multitrack_block(self, multitrack_block):
 
@@ -119,6 +141,9 @@ class Console(object):
 
         for channel in self.channels:
             channel.randomize()
+
+        for bus in self.busses:
+            bus.randomize()
 
     def serialize(self, to_json=None):
 
