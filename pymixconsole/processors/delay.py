@@ -12,21 +12,22 @@ def n_process(data, buffer, read_idx, write_idx, delay, feedback, dry_mix, wet_m
 
     M = buffer.shape[0]
 
-    for n in np.arange(data.shape[0]):
-        in_sample = data[n]
-        out_sample = (dry_mix * in_sample + wet_mix * buffer[read_idx])
-        buffer[write_idx] = in_sample + (buffer[read_idx] * feedback)
+    for ch in np.arange(data.shape[1]):
+        for n in np.arange(data.shape[0]):
+            in_sample = data[n, ch]
+            out_sample = (dry_mix * in_sample + wet_mix * buffer[read_idx,ch])
+            buffer[write_idx,ch] = in_sample + (buffer[read_idx,ch] * feedback)
 
-        read_idx  += 1
-        write_idx += 1
+            read_idx  += 1
+            write_idx += 1
 
-        if (read_idx >= M):
-            read_idx = 0
+            if (read_idx >= M):
+                read_idx = 0
 
-        if (write_idx >= M):
-            write_idx = 0
+            if (write_idx >= M):
+                write_idx = 0
 
-        data[n] = out_sample
+            data[n,ch] = out_sample
 
     return data, buffer, read_idx, write_idx
 
@@ -42,7 +43,7 @@ class Delay(Processor):
             self.parameters.add(Parameter("dry_mix",  0.9, "float", processor=self, units="samples", minimum=0, maximum=1.0))
             self.parameters.add(Parameter("wet_mix",  0.0, "float", processor=self, units="samples", minimum=0, maximum=1.0))
 
-        self.buffer = np.zeros(65536)
+        self.buffer = np.zeros((65536, 2))
         self.read_idx = 0
         self.write_idx = self.parameters.delay.value
 

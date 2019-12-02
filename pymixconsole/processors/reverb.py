@@ -20,12 +20,44 @@ class Reverb(Processor):
         self.parameters.add(Parameter("stereo_spread",  23, "int",   processor=self, minimum=0,   maximum=100))
 
         self.update(None)
+        self.mono = False
 
     def process(self, data):
 
-        # we assume input data is stereo
+        if self.mono:
+            dataL = data
+            dataR = data
 
-        output = np.empty((len(data), 2))
+            xL1, xL2, xL3, xL4, xR1, xR2, xR3, xR4 = self.process_filters(data)
+            
+        else:
+
+            dataL = data[:,0]
+            dataR = data[:,1]
+
+            outL = self.process_filters(dataL)
+            outR = self.process_filters(dataR)
+
+            xL1 = (outL[0] + outR[0])/2
+            xL2 = (outL[1] + outR[1])/2
+            xL3 = (outL[2] + outR[2])/2
+            xL4 = (outL[3] + outR[3])/2
+
+            xR1 = (outL[4] + outR[4])/2
+            xR2 = (outL[5] + outR[5])/2
+            xR3 = (outL[6] + outR[6])/2
+            xR4 = (outL[7] + outR[7])/2
+
+        wet_g = self.parameters.wet_mix.value
+        dry_g = self.parameters.dry_mix.value
+
+        output = np.empty((data.shape[0], 2))
+        output[:,0] = (wet_g * (xL1 + xL3 - xL2 - xL4)) + (dry_g * dataL)
+        output[:,1] = (wet_g * (xR1 + xR3 - xR2 - xR4)) + (dry_g * dataR)
+
+        return output
+
+    def process_filters(self, data):
 
         yL1 = self.allpassL1.process(data)
         yL2 = self.allpassL2.process(yL1)
@@ -47,13 +79,7 @@ class Reverb(Processor):
         xR3 = self.combR3.process(yR4)
         xR4 = self.combR4.process(yR4)
 
-        wet_g = self.parameters.wet_mix.value
-        dry_g = self.parameters.dry_mix.value
-
-        output[:,0] = (wet_g * (xL1 + xL3 - xL2 - xL4)) + (dry_g * data)
-        output[:,1] = (wet_g * (xR1 + xR3 - xR2 - xR4)) + (dry_g * data)
-
-        return output
+        return xL1, xL2, xL3, xL4, xR1, xR2, xR3, xR4
 
     def update(self, parameter_name):
 
