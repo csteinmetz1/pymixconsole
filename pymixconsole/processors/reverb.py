@@ -24,29 +24,15 @@ class Reverb(Processor):
 
     def process(self, data):
 
-        if self.mono:
-            dataL = data
-            dataR = data
-
-            xL1, xL2, xL3, xL4, xR1, xR2, xR3, xR4 = self.process_filters(data)
-            
-        else:
-
+        if data.ndim >= 2:
             dataL = data[:,0]
-            dataR = data[:,1]
+            if data.shape[1] == 2:
+                dataR = data[:,1]
+        else:
+            dataL = data
+            dataR = data1
 
-            outL = self.process_filters(dataL)
-            outR = self.process_filters(dataR)
-
-            xL1 = (outL[0] + outR[0])/2
-            xL2 = (outL[1] + outR[1])/2
-            xL3 = (outL[2] + outR[2])/2
-            xL4 = (outL[3] + outR[3])/2
-
-            xR1 = (outL[4] + outR[4])/2
-            xR2 = (outL[5] + outR[5])/2
-            xR3 = (outL[6] + outR[6])/2
-            xR4 = (outL[7] + outR[7])/2
+        xL1, xL2, xL3, xL4, xR1, xR2, xR3, xR4 = self.process_filters(dataL, dataR)
 
         wet_g = self.parameters.wet_mix.value
         dry_g = self.parameters.dry_mix.value
@@ -57,14 +43,14 @@ class Reverb(Processor):
 
         return output
 
-    def process_filters(self, data):
+    def process_filters(self, dataL, dataR):
 
-        yL1 = self.allpassL1.process(data)
+        yL1 = self.allpassL1.process(dataL)
         yL2 = self.allpassL2.process(yL1)
         yL3 = self.allpassL3.process(yL2)
         yL4 = self.allpassL4.process(yL3)
 
-        yR1 = self.allpassR1.process(data)
+        yR1 = self.allpassR1.process(dataR)
         yR2 = self.allpassR2.process(yR1)
         yR3 = self.allpassR3.process(yR2)
         yR4 = self.allpassR4.process(yR3)
