@@ -8,7 +8,7 @@ kinds = ["string", "int", "float", "bool"]
 class Parameter(object):
     """ Processor parameter object. """
 
-    def __init__(self, name, value, kind, processor=None, units="", minimum=None, maximum=None, options=[], print_precision=1, **kwargs):
+    def __init__(self, name, value, kind, processor=None, units="", minimum=None, maximum=None, options=[], print_precision=1, randomize_value=True, **kwargs):
 
         self.kind = kind
         self.name = name
@@ -35,6 +35,7 @@ class Parameter(object):
         self.units = units
         self._default = value
         self.print_precision = print_precision
+        self.randomize_value = randomize_value
 
         for key, val in kwargs.items():
             setattr(self, key, val)
@@ -85,7 +86,6 @@ class Parameter(object):
         >>> gain.randomize(distribution="normal", mu=0.0, sigma=4.0)
 
         """
-
         if distribution == "default":
             if   self.kind == "int":
                 distribution = "uniform"

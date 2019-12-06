@@ -17,7 +17,8 @@ class Processor():
 
     def randomize(self):
         for name, parameter in self.parameters:
-            parameter.randomize()
+            if parameter.randomize_value:
+                parameter.randomize()
 
     @property
     def parameters(self):
