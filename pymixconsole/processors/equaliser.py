@@ -22,6 +22,7 @@ class Equaliser(Processor):
         super().__init__(name, None, block_size, sample_rate)
 
         self.parameters = ParameterList()
+        self.parameters.add(Parameter("bypass",            False, "bool",  processor=None))
         # low shelf parameters ----------------------------------------------------------------------------------------------
         self.parameters.add(Parameter("low_shelf_gain",      0.0, "float", processor=self, minimum=MIN_GAIN, maximum=MAX_GAIN, mu=0.0, sigma=3.0))
         self.parameters.add(Parameter("low_shelf_freq",     80.0, "float", processor=self, minimum=20.0,     maximum=1000.0))
@@ -81,8 +82,9 @@ class Equaliser(Processor):
 
     def process(self, data):
         
-        for band, irrfilter in self.filters.items():
-            data = irrfilter.apply_filter(data)
+        if not self.parameters.bypass.value:
+            for band, irrfilter in self.filters.items():
+                data = irrfilter.apply_filter(data)
 
         return data
 

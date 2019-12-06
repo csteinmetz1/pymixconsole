@@ -38,6 +38,7 @@ class Delay(Processor):
 
         if not parameters:
             self.parameters = ParameterList()
+            self.parameters.add(Parameter("bypass", False, "bool",  processor=self))
             self.parameters.add(Parameter("delay",   5000, "int",   processor=self, units="samples", minimum=0, maximum=65536))
             self.parameters.add(Parameter("feedback", 0.3, "float", processor=self, units="samples", minimum=0, maximum=1.0))
             self.parameters.add(Parameter("dry_mix",  0.9, "float", processor=self, units="samples", minimum=0, maximum=1.0))
@@ -48,13 +49,16 @@ class Delay(Processor):
         self.write_idx = self.parameters.delay.value
 
     def process(self, data):
-        out, self.buffer, self.read_idx, self.write_idx = n_process(data, 
-                                                           self.buffer, 
-                                                           self.read_idx, 
-                                                           self.write_idx,
-                                                           self.parameters.delay.value,
-                                                           self.parameters.feedback.value,
-                                                           self.parameters.dry_mix.value,
-                                                           self.parameters.wet_mix.value)
-        return out
-                                        
+        if not self.parameters.bypass.value:
+            result =  n_process(data, self.buffer, self.read_idx, self.write_idx,
+                                self.parameters.delay.value, self.parameters.feedback.value,
+                                self.parameters.dry_mix.value, self.parameters.wet_mix.value)
+
+            out            = result[0] 
+            self.buffer    = result[1]
+            self.read_idx  = result[2]
+            self.write_idx = result[3]
+
+            return out
+        
+        return data

@@ -15,8 +15,11 @@ class Gain(Processor):
 
         if not parameters:
             self.parameters = ParameterList()
+            self.parameters.add(Parameter("bypass", False, "bool", processor=None))
             self.parameters.add(Parameter("gain", 0.0, "float", processor=None, units="dB", minimum=-80.0, maximum=24.0, mu=0.0, sigma=4.0))
 
     def process(self, data):
-        #return self.db2linear(self.parameters.gain.value) * data
-        return n_process(data, self.db2linear(self.parameters.gain.value))
+        if self.parameters.bypass.value:
+            return data
+        else:
+            return n_process(data, self.db2linear(self.parameters.gain.value))

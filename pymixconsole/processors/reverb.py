@@ -13,6 +13,7 @@ class Reverb(Processor):
         super().__init__(name, None, block_size, sample_rate)
 
         self.parameters = ParameterList()
+        self.parameters.add(Parameter("bypass",      False, "bool",  processor=self, randomize_value=False))
         self.parameters.add(Parameter("room_size",     0.5, "float", processor=self, minimum=0.0, maximum=1.0))
         self.parameters.add(Parameter("damping",       0.0, "float", processor=self, minimum=0.0, maximum=1.0))
         self.parameters.add(Parameter("dry_mix",       0.9, "float", processor=self, minimum=0.0, maximum=1.0))
@@ -30,16 +31,24 @@ class Reverb(Processor):
                 dataR = data[:,1]
         else:
             dataL = data
-            dataR = data1
-
-        xL1, xL2, xL3, xL4, xR1, xR2, xR3, xR4 = self.process_filters(dataL, dataR)
-
-        wet_g = self.parameters.wet_mix.value
-        dry_g = self.parameters.dry_mix.value
+            dataR = data
 
         output = np.empty((data.shape[0], 2))
-        output[:,0] = (wet_g * (xL1 + xL3 - xL2 - xL4)) + (dry_g * dataL)
-        output[:,1] = (wet_g * (xR1 + xR3 - xR2 - xR4)) + (dry_g * dataR)
+
+        if self.parameters.bypass.value:
+
+            output[:,0] = dataL
+            output[:,1] = dataR
+
+        else:   
+
+            xL1, xL2, xL3, xL4, xR1, xR2, xR3, xR4 = self.process_filters(dataL, dataR)
+
+            wet_g = self.parameters.wet_mix.value
+            dry_g = self.parameters.dry_mix.value
+
+            output[:,0] = (wet_g * (xL1 + xL3 - xL2 - xL4)) + (dry_g * dataL)
+            output[:,1] = (wet_g * (xR1 + xR3 - xR2 - xR4)) + (dry_g * dataR)
 
         return output
 
