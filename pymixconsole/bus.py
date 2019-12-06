@@ -46,9 +46,6 @@ class Bus:
         if master:
             self.processors.add(Equaliser(name="master-eq"))
             self.processors.add(Compressor(name="master-compressor"))
-        else:
-            self.processors.add(Delay(name="delay"))
-            self.processors.add(Reverb(name="reverb"))
 
     def process(self, block):
 

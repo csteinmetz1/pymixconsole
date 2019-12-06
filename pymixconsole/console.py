@@ -3,6 +3,7 @@ import warnings
 import numpy as np
 
 from .channel import Channel
+from .processors import Delay, Reverb
 from .bus import Bus
 from .util import logger
 
@@ -68,7 +69,10 @@ class Console:
         # setup some FX busses
         self.busses = []
         sends = np.zeros(self.num_channels)
-        self.busses.append(Bus(self.sample_rate, self.block_size, self.num_channels))
+        self.busses.append(Bus(self.sample_rate, self.block_size, self.num_channels)) # bus 1 - reverb
+        self.busses.append(Bus(self.sample_rate, self.block_size, self.num_channels)) # bus 2 - delay
+        self.busses[0].processors.add(Delay(name="delay"))
+        self.busses[1].processors.add(Reverb(name="reverb"))
 
         # setup the master bus (which is a special kind of bus)
         self.master = Bus(self.sample_rate, self.block_size, self.num_channels + self.num_busses, master=True)
