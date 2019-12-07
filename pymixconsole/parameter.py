@@ -42,15 +42,17 @@ class Parameter(object):
 
     def __repr__(self):
         if self.kind == "int":
-            return f"{self.name} {self.value:d} kind: {self.kind} ({self.min:d} to {self.max:d})"
+            return f"{self.name} {self.value:d} kind: {self.kind} range: ({self.min:d} to {self.max:d})"
         elif self.kind == "float":
-            s = (f"{self.name} {self.value:.{self.print_precision}f} {self.units}",
-                 f"kind: '{self.kind}'",
-                 f"default: {self._default:.{self.print_precision}f} {self.units}",
-                 f"range: ({self.min:.{self.print_precision}f} to {self.max:.{self.print_precision}f})")
-            return s  
+            s1 = f"{self.name} {self.value:.{self.print_precision}f} {self.units} "
+            s2 = f"kind: '{self.kind}' "
+            s3 = f"default: {self._default:.{self.print_precision}f} {self.units} "
+            s4 = f"range: ({self.min:.{self.print_precision}f} to {self.max:.{self.print_precision}f})"
+            return s1 + s2 + s3 + s4
         elif self.kind == "string":
             return f"{self.name} {self.value} kind: {self.kind} options: ({self.options})"
+        elif self.kind == "bool":
+            return f"{self.name} {self.value} kind: {self.kind}"
 
     def check_value(self, value):
         # if the value is a string check its in options
