@@ -8,28 +8,29 @@ from ..processor import Processor
 from ..parameter_list import ParameterList
 
 @jit(nopython=True)
-def n_process(data, buffer, read_idx, write_idx, delay, feedback, dry_mix, wet_mix):
+def n_process(data, out, buffer, read_idx, write_idx, delay, feedback, dry_mix, wet_mix):
 
     M = buffer.shape[0]
 
-    for ch in np.arange(data.shape[1]):
-        for n in np.arange(data.shape[0]):
+    n_channels = data.shape[1]
+
+    for n in np.arange(data.shape[0]):
+        for ch in np.arange(n_channels):
             in_sample = data[n, ch]
             out_sample = (dry_mix * in_sample + wet_mix * buffer[read_idx,ch])
             buffer[write_idx,ch] = in_sample + (buffer[read_idx,ch] * feedback)
+            out[n,ch] = out_sample
 
-            read_idx  += 1
-            write_idx += 1
+        read_idx  += 1
+        write_idx += 1
 
-            if (read_idx >= M):
-                read_idx = 0
+        if (read_idx >= M):
+            read_idx = 0
 
-            if (write_idx >= M):
-                write_idx = 0
+        if (write_idx >= M):
+            write_idx = 0
 
-            data[n,ch] = out_sample
-
-    return data, buffer, read_idx, write_idx
+    return out, buffer, read_idx, write_idx
 
 class Delay(Processor):
     def __init__(self, name="Delay", parameters=None, block_size=512, sample_rate=44100):
@@ -38,11 +39,11 @@ class Delay(Processor):
 
         if not parameters:
             self.parameters = ParameterList()
-            self.parameters.add(Parameter("bypass", False, "bool",  processor=self))
+            self.parameters.add(Parameter("bypass", False, "bool",  processor=None))
             self.parameters.add(Parameter("delay",   5000, "int",   processor=self, units="samples", minimum=0, maximum=65536))
-            self.parameters.add(Parameter("feedback", 0.3, "float", processor=self, units="samples", minimum=0, maximum=1.0))
-            self.parameters.add(Parameter("dry_mix",  0.9, "float", processor=self, units="samples", minimum=0, maximum=1.0))
-            self.parameters.add(Parameter("wet_mix",  0.0, "float", processor=self, units="samples", minimum=0, maximum=1.0))
+            self.parameters.add(Parameter("feedback", 0.3, "float", processor=self, units="samples", minimum=0, maximum=1.0, mu=0.3, sigma=0.2))
+            self.parameters.add(Parameter("dry_mix",  0.9, "float", processor=self, units="samples", minimum=0, maximum=1.0, mu=0.9, sigma=0.05))
+            self.parameters.add(Parameter("wet_mix",  0.4, "float", processor=self, units="samples", minimum=0, maximum=1.0, mu=0.4, sigma=0.4))
 
         self.buffer = np.zeros((65536, 2))
         self.read_idx = 0
@@ -50,15 +51,25 @@ class Delay(Processor):
 
     def process(self, data):
         if not self.parameters.bypass.value:
-            result =  n_process(data, self.buffer, self.read_idx, self.write_idx,
+
+            out = np.zeros((data.shape[0], 2))
+
+            if data.ndim < 2:
+                data = np.expand_dims(data, axis=1)
+
+            out, self.buffer, self.read_idx, self.write_idx = n_process(data, out, self.buffer, self.read_idx, self.write_idx,
                                 self.parameters.delay.value, self.parameters.feedback.value,
                                 self.parameters.dry_mix.value, self.parameters.wet_mix.value)
 
-            out            = result[0] 
-            self.buffer    = result[1]
-            self.read_idx  = result[2]
-            self.write_idx = result[3]
+            return np.squeeze(out)
 
-            return out
-        
-        return data
+        else:
+            return data
+
+    def update(self, parameterName):
+        self.reset()
+
+    def reset(self):
+        self.read_idx = 0
+        self.write_idx = self.parameters.delay.value
+        self.buffer = np.zeros((65536, 2))
