@@ -9,8 +9,10 @@ class ParameterList():
             yield attr, value
 
     def __repr__(self):
+        s = ""
         for name, parameter in self:
-            return parameter.__repr__()
+            s += parameter.__repr__() + "\n"
+        return s
 
     def add(self, parameter):
         self.check_parameter(parameter)
