@@ -1,40 +1,70 @@
+from numba import jit
 import numpy as np
 import scipy.signal
+
+@jit(nopython=True)
+def n_process(data, buffer, buffer_size, buffer_idx, filterstore, feedback, damp1, damp2):
+
+    M = data.shape[0]
+
+    for n in np.arange(M):
+
+        in_sample = data[n]
+        out_sample = buffer[buffer_idx]
+
+        filterstore = (out_sample*damp2) + (filterstore*damp1)
+        buffer[buffer_idx] = in_sample + (filterstore*feedback)
+        data[n] = out_sample
+
+        buffer_idx += 1
+ 
+        if buffer_idx >= buffer_size:
+            buffer_idx = 0
+
+    return data, buffer, buffer_idx, filterstore
 
 class Comb(object):
 
     def __init__(self, buffer_size, damp, feedback, block_size):
-        self.__buffer_size = buffer_size
-        self.__feedback = feedback
         self.block_size = block_size
+        self.buffer_size = buffer_size
+        self.feedback = 0.2 # we need to a scaleroom to handle this
+        self.damp = damp
 
-        self.calculate_coefficients()
+        self.reset()
 
-    def process(self, block):
+    def process(self, data):
+        data, self._buffer, self._buffer_idx, self._filterstore = n_process(data, self._buffer, self.buffer_size, self._buffer_idx, self._filterstore, self.feedback, self._damp1, self._damp2)
+        return data
 
-        y, self.zi = scipy.signal.lfilter(self.b, self.a, block, axis=0, zi=self.zi)
-
-        return y
-
-    def calculate_coefficients(self):
-        self.b = np.array([1.0])
-        self.a = np.concatenate(([1.0], np.zeros(self.buffer_size-1), [-self.feedback]))
-        self.zi = np.zeros((max(len(self.a), len(self.b)) - 1,))
+    def reset(self):
+        self._buffer = np.zeros(self.buffer_size)
+        self._buffer_idx  = 0
+        self._filterstore = 0.0
 
     @property
     def feedback(self):
-        return self.__feedback
+        return self._feedback
 
     @feedback.setter
     def feedback(self, feedback):
-        self.__feedback = feedback
-        self.calculate_coefficients()
+        self._feedback = feedback
+
+    @property
+    def damp(self):
+        return self._damp
+
+    @damp.setter
+    def damp(self, damp):
+        self._damp = damp
+        self._damp1 = damp
+        self._damp2 = 1 - damp
 
     @property
     def buffer_size(self):
-        return self.__buffer_size
+        return self._buffer_size
 
     @buffer_size.setter
     def buffer_size(self, buffer_size):
-        self.__buffer_size = buffer_size
-        self.calculate_coefficients()
+        self._buffer_size = buffer_size
+        self.reset()
