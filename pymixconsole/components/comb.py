@@ -28,13 +28,13 @@ class Comb(object):
     def __init__(self, buffer_size, damp, feedback, block_size):
         self.block_size = block_size
         self.buffer_size = buffer_size
-        self.feedback = 0.2 # we need to a scaleroom to handle this
+        self.feedback = feedback
         self.damp = damp
 
         self.reset()
 
     def process(self, data):
-        data, self._buffer, self._buffer_idx, self._filterstore = n_process(data, self._buffer, self.buffer_size, self._buffer_idx, self._filterstore, self.feedback, self._damp1, self._damp2)
+        data, self._buffer, self._buffer_idx, self._filterstore = n_process(data, self._buffer, self.buffer_size, self._buffer_idx, self._filterstore, self.feedback, 0, 0)#self._damp1, self._damp2)
         return data
 
     def reset(self):
