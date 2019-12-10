@@ -17,6 +17,7 @@ scaledamp    = 0.4
 scaleroom    = 0.28
 offsetroom   = 0.7
 stereospread = 23
+scalegain    = 0.2
 
 class Reverb(Processor):
     def __init__(self, name="Reverb", block_size=512, sample_rate=44100):
@@ -24,10 +25,10 @@ class Reverb(Processor):
 
         self.parameters = ParameterList()
         self.parameters.add(Parameter("bypass",    False, "bool",  processor=self, randomize_value=False))
-        self.parameters.add(Parameter("room_size",   0.5, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("room_size",   0.5, "float", processor=self, minimum=0.05, maximum=0.85))
         self.parameters.add(Parameter("damping",     0.1, "float", processor=self, minimum=0.0, maximum=1.0))
-        self.parameters.add(Parameter("dry_mix",     0.9, "float", processor=self, minimum=0.0, maximum=1.0))
-        self.parameters.add(Parameter("wet_mix",     0.1, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("dry_mix",     0.9, "float", processor=self, minimum=0.0, maximum=1.0, mu=0.9, sigma=0.1))
+        self.parameters.add(Parameter("wet_mix",     0.1, "float", processor=self, minimum=0.0, maximum=1.0, mu=0.05, sigma=0.05))
         self.parameters.add(Parameter("width",       0.7, "float", processor=self, minimum=0.0, maximum=1.0))
 
         self.update(None)
@@ -51,36 +52,36 @@ class Reverb(Processor):
 
         else:   
 
-            xL, xR = self.process_filters(dataL, dataR)
+            xL, xR = self.process_filters(dataL.copy(), dataR.copy())
 
-            wet_g = self.parameters.wet_mix.value
-            dry_g = self.parameters.dry_mix.value
+            wet1_g = self.parameters.wet_mix.value * ((self.parameters.width.value/2) + 0.5)
+            wet2_g = self.parameters.wet_mix.value * ((1-self.parameters.width.value)/2)
+            dry_g  = self.parameters.dry_mix.value
 
-            output[:,0] = (wet_g * xL) + (dry_g * dataL)
-            output[:,1] = (wet_g * xR) + (dry_g * dataR)
-
-            #xL, xR = self.process_filters(dataL.copy(), dataR.copy())
-
-            #wet1_g = self.parameters.wet_mix.value * ((self.parameters.width.value/2) + 0.5)
-            #wet2_g = self.parameters.wet_mix.value * ((1-self.parameters.width.value)/2)
-            #dry_g  = self.parameters.dry_mix.value
-
-            #output[:,0] = (wet1_g * xL) + (wet2_g * xR) + (dry_g * dataL)
-            #output[:,1] = (wet1_g * xR) + (wet2_g * xL) + (dry_g * dataR)
+            output[:,0] = (wet1_g * xL) + (wet2_g * xR) + (dry_g * dataL)
+            output[:,1] = (wet1_g * xR) + (wet2_g * xL) + (dry_g * dataR)
 
         return output
 
     def process_filters(self, dataL, dataR):
 
-        xL  = self.combL1.process(dataL.copy())
-        xL += self.combL2.process(dataL.copy())
-        xL += self.combL3.process(dataL.copy())
-        xL += self.combL4.process(dataL.copy())
+        xL  = self.combL1.process(dataL.copy() * scalegain)
+        xL += self.combL2.process(dataL.copy() * scalegain)
+        xL += self.combL3.process(dataL.copy() * scalegain)
+        xL += self.combL4.process(dataL.copy() * scalegain)
+        xL  = self.combL5.process(dataL.copy() * scalegain)
+        xL += self.combL6.process(dataL.copy() * scalegain)
+        xL += self.combL7.process(dataL.copy() * scalegain)
+        xL += self.combL8.process(dataL.copy() * scalegain)
 
-        xR  = self.combR1.process(dataR.copy())
-        xR += self.combR2.process(dataR.copy())
-        xR += self.combR3.process(dataR.copy())
-        xR += self.combR4.process(dataR.copy())
+        xR  = self.combR1.process(dataR.copy() * scalegain)
+        xR += self.combR2.process(dataR.copy() * scalegain)
+        xR += self.combR3.process(dataR.copy() * scalegain)
+        xR += self.combR4.process(dataR.copy() * scalegain)
+        xR  = self.combR5.process(dataR.copy() * scalegain)
+        xR += self.combR6.process(dataR.copy() * scalegain)
+        xR += self.combR7.process(dataR.copy() * scalegain)
+        xR += self.combR8.process(dataR.copy() * scalegain)
 
         yL1 = self.allpassL1.process(xL)
         yL2 = self.allpassL2.process(yL1)
