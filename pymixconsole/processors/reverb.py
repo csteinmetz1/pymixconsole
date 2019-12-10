@@ -8,20 +8,29 @@ from ..parameter_list import ParameterList
 from ..components.allpass import Allpass
 from ..components.comb import Comb
 
+# Tuning
+muted        = 0.0
+fixedgain    = 0.015
+scalewet     = 3
+scaledry     = 2
+scaledamp    = 0.4
+scaleroom    = 0.28
+offsetroom   = 0.7
+stereospread = 23
+
 class Reverb(Processor):
     def __init__(self, name="Reverb", block_size=512, sample_rate=44100):
         super().__init__(name, None, block_size, sample_rate)
 
         self.parameters = ParameterList()
-        self.parameters.add(Parameter("bypass",      False, "bool",  processor=self, randomize_value=False))
-        self.parameters.add(Parameter("room_size",     0.5, "float", processor=self, minimum=0.0, maximum=1.0))
-        self.parameters.add(Parameter("damping",       0.0, "float", processor=self, minimum=0.0, maximum=1.0))
-        self.parameters.add(Parameter("dry_mix",       0.9, "float", processor=self, minimum=0.0, maximum=1.0))
-        self.parameters.add(Parameter("wet_mix",       0.1, "float", processor=self, minimum=0.0, maximum=1.0))
-        self.parameters.add(Parameter("stereo_spread",  23, "int",   processor=self, minimum=0,   maximum=100))
+        self.parameters.add(Parameter("bypass",    False, "bool",  processor=self, randomize_value=False))
+        self.parameters.add(Parameter("room_size",   0.5, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("damping",     0.1, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("dry_mix",     0.9, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("wet_mix",     0.1, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("width",       0.7, "float", processor=self, minimum=0.0, maximum=1.0))
 
         self.update(None)
-        self.mono = False
 
     def process(self, data):
 
@@ -33,7 +42,7 @@ class Reverb(Processor):
             dataL = data
             dataR = data
 
-        output = np.empty((data.shape[0], 2))
+        output = np.zeros((data.shape[0], 2))
 
         if self.parameters.bypass.value:
 
@@ -42,45 +51,54 @@ class Reverb(Processor):
 
         else:   
 
-            xL1, xL2, xL3, xL4, xR1, xR2, xR3, xR4 = self.process_filters(dataL, dataR)
+            xL, xR = self.process_filters(dataL, dataR)
 
             wet_g = self.parameters.wet_mix.value
             dry_g = self.parameters.dry_mix.value
 
-            output[:,0] = (wet_g * (xL1 + xL3 - xL2 - xL4)) + (dry_g * dataL)
-            output[:,1] = (wet_g * (xR1 + xR3 - xR2 - xR4)) + (dry_g * dataR)
+            output[:,0] = (wet_g * xL) + (dry_g * dataL)
+            output[:,1] = (wet_g * xR) + (dry_g * dataR)
+
+            #xL, xR = self.process_filters(dataL.copy(), dataR.copy())
+
+            #wet1_g = self.parameters.wet_mix.value * ((self.parameters.width.value/2) + 0.5)
+            #wet2_g = self.parameters.wet_mix.value * ((1-self.parameters.width.value)/2)
+            #dry_g  = self.parameters.dry_mix.value
+
+            #output[:,0] = (wet1_g * xL) + (wet2_g * xR) + (dry_g * dataL)
+            #output[:,1] = (wet1_g * xR) + (wet2_g * xL) + (dry_g * dataR)
 
         return output
 
     def process_filters(self, dataL, dataR):
 
-        yL1 = self.allpassL1.process(dataL)
+        xL  = self.combL1.process(dataL.copy())
+        xL += self.combL2.process(dataL.copy())
+        xL += self.combL3.process(dataL.copy())
+        xL += self.combL4.process(dataL.copy())
+
+        xR  = self.combR1.process(dataR.copy())
+        xR += self.combR2.process(dataR.copy())
+        xR += self.combR3.process(dataR.copy())
+        xR += self.combR4.process(dataR.copy())
+
+        yL1 = self.allpassL1.process(xL)
         yL2 = self.allpassL2.process(yL1)
         yL3 = self.allpassL3.process(yL2)
         yL4 = self.allpassL4.process(yL3)
 
-        yR1 = self.allpassR1.process(dataR)
+        yR1 = self.allpassR1.process(xR)
         yR2 = self.allpassR2.process(yR1)
         yR3 = self.allpassR3.process(yR2)
         yR4 = self.allpassR4.process(yR3)
 
-        xL1 = self.combL1.process(yL4)
-        xL2 = self.combL2.process(yL4)
-        xL3 = self.combL3.process(yL4)
-        xL4 = self.combL4.process(yL4)
-
-        xR1 = self.combR1.process(yR4)
-        xR2 = self.combR2.process(yR4)
-        xR3 = self.combR3.process(yR4)
-        xR4 = self.combR4.process(yR4)
-
-        return xL1, xL2, xL3, xL4, xR1, xR2, xR3, xR4
+        return yL4, yR4
 
     def update(self, parameter_name):
 
         rs = self.parameters.room_size.value
         dp = self.parameters.damping.value
-        ss = self.parameters.stereo_spread.value
+        ss = stereospread
 
         # initialize allpass and feedback comb-filters
         # (with coefficients optimized for fs=44.1kHz)
@@ -101,3 +119,11 @@ class Reverb(Processor):
         self.combR3 = Comb(1277+ss, dp, rs, self.block_size)
         self.combL4 = Comb(1356,    dp, rs, self.block_size)
         self.combR4 = Comb(1356+ss, dp, rs, self.block_size)
+        self.combL5 = Comb(1422,    dp, rs, self.block_size)
+        self.combR5 = Comb(1422+ss, dp, rs, self.block_size)
+        self.combL6 = Comb(1491,    dp, rs, self.block_size)
+        self.combR6 = Comb(1491+ss, dp, rs, self.block_size)
+        self.combL7 = Comb(1557,    dp, rs, self.block_size)
+        self.combR7 = Comb(1557+ss, dp, rs, self.block_size)
+        self.combL8 = Comb(1617,    dp, rs, self.block_size)
+        self.combR8 = Comb(1617+ss, dp, rs, self.block_size)
