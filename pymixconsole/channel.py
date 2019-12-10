@@ -18,19 +18,17 @@ class Channel():
 
         # pre-processors (order is not shuffled)
         self.pre_processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)
-        self.pre_processors.add(Gain(name="pre-gain"))
+        self.pre_processors.add(Gain(name="pre-gain"))  # input gain
         self.pre_processors.add(Inverter(name="polarity-inverter"))
 
         # core insert processors (order is shuffled on randomize)                           
         self.processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)
         self.processors.add(Equaliser(name="eq"))
         self.processors.add(Compressor(name="compressor"))
-        #self.processors.add(Delay(name="delay"))
-        #self.processors.add(Reverb(name="reverb"))
 
         # post-processors (order is not shuffled)
         self.post_processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)
-        self.post_processors.add(Gain(name="post-gain"))
+        self.post_processors.add(Gain(name="post-gain")) # fader
         self.post_processors.add(Panner(name="panner"))
 
     def process(self, ch_buffer):
