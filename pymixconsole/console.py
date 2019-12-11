@@ -154,17 +154,22 @@ class Console:
 
     def serialize(self, to_json=None):
 
-        serialized_channels = {"channels" : []}
+        serialized_console = {"channels" : [], "busses" : [], "master" : None}
 
         for channel in self.channels:
-            serialized_channels["channels"].append(channel.serialize())
+            serialized_console["channels"].append(channel.serialize())
+
+        for bus in self.busses:
+            serialized_console["busses"].append(bus.serialize())
+
+        serialized_console["master"] = self.master.serialize()
 
         if to_json:
             with open(to_json, "w") as fp:
-                json.dump(serialized_channels, fp)
+                json.dump(serialized_console, fp)
                 self.log.info(f"wrote serialized console paramters to file: '{to_json}'")
 
-        return serialized_channels
+        return serialized_console
     
     def render_diagram(self, name="pymixconsole", filename="pymixconsole_diagram", show_parameters=True):
 

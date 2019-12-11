@@ -66,6 +66,21 @@ class Bus:
 
         return bus_buffer
 
+    def serialize(self, **kwargs):
+
+        serialized_bus = {"processors"  : []}
+
+        for idx, processor in enumerate(self.processors.get_all()):
+            serialized_processor = {processor.name : processor.parameters.serialize(**kwargs)}
+            serialized_processor[processor.name]["order"] = idx
+            serialized_bus["processors"].append(serialized_processor)
+
+        if not self.master:
+            serialized_bus["sends"] = self.parameters.serialize(**kwargs)
+
+        return serialized_bus
+
+
     def randomize(self, shuffle=False):
 
         # randomize each processor configuration
