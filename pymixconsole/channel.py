@@ -58,16 +58,19 @@ class Channel():
                                  "core_processors" : [],
                                  "post_processors" : []}
 
-        for processor in self.pre_processors.get_all():
+        for idx, processor in enumerate(self.pre_processors.get_all()):
             serialized_processor = {processor.name : processor.parameters.serialize(**kwargs)}
+            serialized_processor[processor.name]["order"] = idx
             serialized_processors["pre_processors"].append(serialized_processor)
 
-        for processor in self.processors.get_all():
+        for idx, processor in enumerate(self.processors.get_all()):
             serialized_processor = {processor.name : processor.parameters.serialize(**kwargs)}
+            serialized_processor[processor.name]["order"] = idx
             serialized_processors["core_processors"].append(serialized_processor)
 
-        for processor in self.post_processors.get_all():
+        for idx, processor in enumerate(self.post_processors.get_all()):
             serialized_processor = {processor.name : processor.parameters.serialize(**kwargs)}
+            serialized_processor[processor.name]["order"] = idx
             serialized_processors["post_processors"].append(serialized_processor)
 
         return serialized_processors
