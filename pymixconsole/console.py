@@ -201,7 +201,10 @@ class Console:
 
         # do the same for the busses
         for bus_idx, bus in enumerate(self.busses):
+            label = self._generate_processor_table(bus, show_parameters=True)
+            dot.node(f"bus-sends{bus_idx}", label=label, shape="none", _attributes=node_attr)
             dot.node(f"bus{bus_idx}", label=f"bus {bus_idx}", shape="box", _attributes=node_attr)
+            dot.edge(f"bus-sends{bus_idx}", f"bus{bus_idx}")
             for p_idx, processor in enumerate(bus.processors.get_all()):
                 curr_name = f"{bus_idx}{processor.name}"
                 label = self._generate_processor_table(processor, show_parameters=show_parameters)
@@ -217,7 +220,7 @@ class Console:
             #for ch_idx, channel in enumerate(self.channels):
             #    dot.edge(f"ch{ch_idx}", f"bus{bus_idx}")
 
-        dot.render(filename, format="svg", view=True)  
+        dot.render(filename, format="svg", view=False)  
     
     def _generate_processor_table(self, processor, show_parameters=False):
 
