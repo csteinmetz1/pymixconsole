@@ -1,6 +1,8 @@
 import numpy as np
 
+from .parameter import Parameter
 from .processor_list import ProcessorList
+from .parameter_list import ParameterList
 
 from .processors.gain import Gain
 from .processors.delay import Delay
@@ -28,6 +30,7 @@ class Bus:
         to ones with the size of n_inputs.
         
         """
+        self.name = "sends"
         self.sample_rate = sample_rate
         self.block_size = block_size
         self.n_inputs = n_inputs
@@ -43,6 +46,11 @@ class Bus:
 
         self.processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)
 
+        # setup the mixing inputs (channel sends)
+        self.parameters = ParameterList()
+        for ch_idx in np.arange(n_inputs):
+            self.parameters.add(Parameter(f"ch{ch_idx}-send", self.sends[ch_idx], "float", units="linear", minimum=0.0, maximum=1.0))
+
         if master:
             self.processors.add(Equaliser(name="master-eq"))
             self.processors.add(Compressor(name="master-compressor"))
@@ -50,7 +58,8 @@ class Bus:
     def process(self, block):
 
         # create a stereo mixdown of all channels based on send gains
-        bus_buffer = np.sum(block * self.sends, axis=2)
+        sends = [p.value for n, p in self.parameters]
+        bus_buffer = np.sum(block * sends, axis=2)
 
         for processor in self.processors.get_all():
             bus_buffer = processor.process(bus_buffer)
@@ -65,7 +74,8 @@ class Bus:
 
         # randomize the sends (only for non-master bus)
         if not self.master:
-            self.sends = np.random.rand(self.n_inputs)
+            for name, send in self.parameters:
+                send.randomize()
 
         # randomize settings of core processors only
         if shuffle:
