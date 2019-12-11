@@ -1,6 +1,7 @@
 import json
 import warnings
 import numpy as np
+from graphviz import Digraph
 
 from .channel import Channel
 from .processors import Delay, Reverb, Equaliser
@@ -164,6 +165,76 @@ class Console:
                 self.log.info(f"wrote serialized console paramters to file: '{to_json}'")
 
         return serialized_channels
+    
+    def render_diagram(self, name="pymixconsole", filename="pymixconsole_diagram", show_parameters=True):
+
+        dot = Digraph(comment=name, graph_attr={'splines' : 'polyline', 'fontname' : 'Helvetica'})
+
+        node_attr={'fixedsize': 'false', 'width': '2', 'fontname' : 'Helvetica'}
+
+        # master bus node
+        dot.node("master", "master", shape="box", _attributes=node_attr)
+        for p_idx, processor in enumerate(self.master.processors.get_all()):
+            curr_name = f"m{processor.name}"
+            label = self._generate_processor_table(processor, show_parameters=show_parameters)
+            dot.node(curr_name, label=label, shape="none", _attributes=node_attr)
+            if p_idx > 0:
+                dot.edge(prev_name, curr_name)
+            else: 
+                dot.edge("master", curr_name)
+
+            prev_name = f"m{processor.name}"
+
+        # iterate over channels
+        for ch_idx, channel in enumerate(self.channels):
+            dot.node(f"ch{ch_idx}", label=f"channel {ch_idx}", shape="box", _attributes=node_attr)
+            for p_idx, processor in enumerate(channel.get_all_processors()):
+                curr_name = f"{ch_idx}{processor.name}"
+                label = self._generate_processor_table(processor, show_parameters=show_parameters)
+                dot.node(curr_name, label=label, shape="none", _attributes=node_attr)
+                if p_idx > 0:
+                    dot.edge(prev_name, curr_name)
+                else:
+                    dot.edge(f"ch{ch_idx}", curr_name)
+                prev_name = f"{ch_idx}{processor.name}"
+            dot.edge(prev_name, "master")
+
+        # do the same for the busses
+        for bus_idx, bus in enumerate(self.busses):
+            dot.node(f"bus{bus_idx}", label=f"bus {bus_idx}", shape="box", _attributes=node_attr)
+            for p_idx, processor in enumerate(bus.processors.get_all()):
+                curr_name = f"{bus_idx}{processor.name}"
+                label = self._generate_processor_table(processor, show_parameters=show_parameters)
+                dot.node(curr_name, label=label, shape="none", _attributes=node_attr)
+                if p_idx > 0:
+                    dot.edge(prev_name, curr_name)
+                else:
+                    dot.edge(f"bus{bus_idx}", curr_name)
+                prev_name = f"{bus_idx}{processor.name}"
+            dot.edge(prev_name, "master")
+
+            # make inputs of bus from each channel
+            #for ch_idx, channel in enumerate(self.channels):
+            #    dot.edge(f"ch{ch_idx}", f"bus{bus_idx}")
+
+        dot.render(filename, format="svg", view=True)  
+    
+    def _generate_processor_table(self, processor, show_parameters=False):
+
+        if show_parameters:
+            label = f"""< 
+                    <TABLE  BORDER="0.5" CELLBORDER="1" CELLSPACING="0"> 
+                        <TR> 
+                            <TD COLSPAN="2"> <B>{processor.name}</B> </TD>
+                        </TR>"""
+            for name, parameter in processor.parameters:
+                label += f"<TR> <TD>{name}</TD> <TD>{parameter.value}</TD> </TR>"
+            label += "</TABLE> >"
+        else:
+            label = f"{processor.name}"
+
+        return label
+
 
     @property
     def verbose(self):
