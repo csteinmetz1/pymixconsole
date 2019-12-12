@@ -159,6 +159,8 @@ class Parameter(object):
                 val[index] = 1
             else:
                 val = self.value
+        elif self.kind == "bool":
+            val = float(self.value)
         else:
             if normalize:
                 if  self.max - self.min == 0:
