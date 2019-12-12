@@ -9,7 +9,7 @@ def n_process(data, invert):
     if invert:
         return -1.0 * data
     else:
-        return data
+        return  1.0 * data
 
 class Inverter(Processor):
     def __init__(self, name="Inverter", parameters=None, block_size=512, sample_rate=44100):
