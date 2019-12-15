@@ -175,20 +175,7 @@ class Console:
 
         dot = Digraph(comment=name, graph_attr={'splines' : 'polyline', 'fontname' : 'Helvetica'})
 
-        node_attr={'fixedsize': 'false', 'width': '2', 'fontname' : 'Helvetica'}
-
-        # master bus node
-        dot.node("master", "master", shape="box", _attributes=node_attr)
-        for p_idx, processor in enumerate(self.master.processors.get_all()):
-            curr_name = f"m{processor.name}"
-            label = self._generate_processor_table(processor, show_parameters=show_parameters)
-            dot.node(curr_name, label=label, shape="none", _attributes=node_attr)
-            if p_idx > 0:
-                dot.edge(prev_name, curr_name)
-            else: 
-                dot.edge("master", curr_name)
-
-            prev_name = f"m{processor.name}"
+        node_attr = {'fixedsize': 'false', 'width': '3', 'fontname' : 'Helvetica'}
 
         # iterate over channels
         for ch_idx, channel in enumerate(self.channels):
@@ -202,14 +189,14 @@ class Console:
                 else:
                     dot.edge(f"ch{ch_idx}", curr_name)
                 prev_name = f"{ch_idx}{processor.name}"
-            dot.edge(prev_name, "master")
+            #dot.edge(prev_name, "master")
 
         # do the same for the busses
         for bus_idx, bus in enumerate(self.busses):
             label = self._generate_processor_table(bus, show_parameters=True)
-            dot.node(f"bus-sends{bus_idx}", label=label, shape="none", _attributes=node_attr)
             dot.node(f"bus{bus_idx}", label=f"bus {bus_idx}", shape="box", _attributes=node_attr)
-            dot.edge(f"bus-sends{bus_idx}", f"bus{bus_idx}")
+            dot.node(f"bus-sends{bus_idx}", label=label, shape="none", _attributes=node_attr)
+            dot.edge(f"bus{bus_idx}", f"bus-sends{bus_idx}", )
             for p_idx, processor in enumerate(bus.processors.get_all()):
                 curr_name = f"{bus_idx}{processor.name}"
                 label = self._generate_processor_table(processor, show_parameters=show_parameters)
@@ -217,9 +204,22 @@ class Console:
                 if p_idx > 0:
                     dot.edge(prev_name, curr_name)
                 else:
-                    dot.edge(f"bus{bus_idx}", curr_name)
+                    dot.edge(f"bus-sends{bus_idx}", curr_name)
                 prev_name = f"{bus_idx}{processor.name}"
-            dot.edge(prev_name, "master")
+            #dot.edge(prev_name, "master")
+
+        # master bus node
+        dot.node("master", "master", shape="box", _attributes=node_attr)
+        for p_idx, processor in enumerate(self.master.processors.get_all()):
+            curr_name = f"m{processor.name}"
+            label = self._generate_processor_table(processor, show_parameters=show_parameters)
+            dot.node(curr_name, label=label, shape="none", _attributes=node_attr)
+            if p_idx > 0:
+                dot.edge(prev_name, curr_name)
+            else: 
+                dot.edge("master", curr_name)
+
+            prev_name = f"m{processor.name}"
 
             # make inputs of bus from each channel
             #for ch_idx, channel in enumerate(self.channels):
@@ -236,13 +236,15 @@ class Console:
                             <TD COLSPAN="2"> <B>{processor.name}</B> </TD>
                         </TR>"""
             for name, parameter in processor.parameters:
-                label += f"<TR> <TD>{name}</TD> <TD>{parameter.value}</TD> </TR>"
+                if parameter.kind == "float":
+                    label += f"<TR> <TD>{name}</TD> <TD>{parameter.value:0.2f}</TD> </TR>"
+                else:
+                    label += f"<TR> <TD>{name}</TD> <TD>{parameter.value}</TD> </TR>"
             label += "</TABLE> >"
         else:
             label = f"{processor.name}"
 
         return label
-
 
     @property
     def verbose(self):
