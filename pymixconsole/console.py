@@ -1,5 +1,6 @@
 import json
 import warnings
+import pickle
 import numpy as np
 from graphviz import Digraph
 
@@ -245,6 +246,29 @@ class Console:
             label = f"{processor.name}"
 
         return label
+
+    def save_parameters(self, filepath):
+        pass
+
+    def load_parameters(self, filepath):
+        pass
+
+    def save(self, filepath):
+        """ Save the entire console object along with parameter settings and processor state. 
+        
+        filepath (str): Path to the output file (with extension)
+        
+        """
+        pickle.dump(self, open(filepath, "wb"))
+    
+    @staticmethod
+    def load(filepath):
+        """ Load the entire console object from a saved pickled console. 
+        
+        filepath (str): Path to the input file (with extension)
+        
+        """
+        return pickle.load(open(filepath, "rb"))
 
     @property
     def verbose(self):
