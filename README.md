@@ -10,40 +10,79 @@ pip install git+https://github.com/csteinmetz1/pymixconsole
 Setup a mixing console with a set of tracks from a multitrack project and apply processing per block.
 
 ## Basic processing
-``` python
-import glob
-import soundfile as sf
-import pymixconsole as pymc
 
-# find all tracks in a directory
-multitrack_files = glob.glob("multitrack/*.wav")
+One way to apply processing is to create a multidimensional array of shape [samples, tracks/channels],
+where each channel is a mono stream of audio, which will be processed by the associated channel in the console.
 
-# construct Multitrack with list of files
-multitrack = pymc.Multitrack(files=multitrack_files)
-
-# construct Console with multitrack object
-console = pymc.MixConsole(multitrack)
-
-# iterate over blocks and apply mixing console processing
-for block_idx in range(multitrack.num_blocks):
-    console.process_block()
-```
-
-You can also directly load a multidimensional numpy array to create the `Multitrack` object.
-The array must have dimensions of [samples, tracks/channels]
+In this example we create an array with 8 channels of audio and then instantiate a default console with 8 channels.
+Then we iterate over the input data by the `block_size` and we pass each block to the console's `process_block()` 
+function, which takes this array, applies each channel processor, and return a stereo mix. We then store this output
+in our pre-allocated array. We finally save this data to a `.wav` file with pySoundFile as the end. 
 
 ``` python
 import numpy as np
+import soundfile as sf
 import pymixconsole as pymc
 
-data = np.zeros(44100,8)    # one second of audio for 8 mono tracks
-rate = 44100                # 44.1 kHz sampling rate
+data = np.random.rand(44100,8)   # one second of audio for 8 mono tracks
+rate = 44100                     # 44.1 kHz sampling rate
+block_size = 512                 # processor block size
 
-# create the Multitrack object
-multitrack = pymc.Multitrack(data=data, rate=rate)
+# create a mix console with settings that match our audio data
+console = pymc.Console(block_size=block_size, sample_rate=rate, num_channels=8)
+
+# array to hold the output of the console (stereo)
+out = np.empty(shape=(data.shape[0], 2))
+
+# iterate over each block of data
+for i in range(data.shape[0]//block_size):
+
+    start = i * block_size 
+    stop  = start + block_size
+
+    out[start:stop,:] = console.process_block(data[start:stop,:])
+
+# save out the processed audio
+sf.write("output.wav", out, rate)
+```
+
+## Console control
+
+pymixconsole provides a high level of control over how the mix console is set up.
+By default, a console will include the supplied number of channels, as well as two
+busses (one for reverb, one for delay) and a master bus which features a compressor 
+and equalizer. By default each channel is created with a pre-gain, polarity inverter, 
+equaliser, compressor, post-gain, and a panner. 
+
+There are three levels of processors for each channel: pre-processors, core-processors, 
+and post-processors. The distinction is useful since we want to impose some constraints
+on how these processors may be randomized in our `randomize()` method. The simple explanation
+is that the order of pre and post processors is never shuffled, while core-processors can be.
+
+The defaults were chosen to be a good starting place for basic processing, but the 
+user can customize this completely. For example, we can at any time add an extra processor
+to a channel as follows. Here we add a second compressor to the third channel's core-processors 
+(zero-indexed), and then change the threshold parameter.
+
+```python
+console.channels[2].processors.add(pymc.processors.Compressor(name="second-comp"))
+console.channels[2].processor.get("second-comp").parameters.threshold.value = -22.0
 ```
 
 ## Processor API
+
+A number of basic processor units are included which can be included
+on a channel, bus, or the master bus. 
+
+- Gain
+- Polarity inverter
+- Converter
+- Panner 
+- Equaliser 
+- Compressor 
+- Delay
+- Distortion
+- Reverb
 
 ### Gain
 
