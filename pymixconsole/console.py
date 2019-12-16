@@ -153,17 +153,17 @@ class Console:
         for bus in self.busses:
             bus.randomize()
 
-    def serialize(self, to_json=None):
+    def serialize(self, to_json=None,  **kwargs):
 
         serialized_console = {"channels" : [], "busses" : [], "master" : None}
 
         for channel in self.channels:
-            serialized_console["channels"].append(channel.serialize())
+            serialized_console["channels"].append(channel.serialize(**kwargs))
 
         for bus in self.busses:
-            serialized_console["busses"].append(bus.serialize())
+            serialized_console["busses"].append(bus.serialize(**kwargs))
 
-        serialized_console["master"] = self.master.serialize()
+        serialized_console["master"] = self.master.serialize(**kwargs)
 
         if to_json:
             with open(to_json, "w") as fp:
