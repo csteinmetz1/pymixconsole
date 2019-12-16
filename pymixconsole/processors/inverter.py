@@ -11,7 +11,7 @@ def n_process(data, invert):
     else:
         return  1.0 * data
 
-class Inverter(Processor):
+class PolarityInverter(Processor):
     def __init__(self, name="Inverter", parameters=None, block_size=512, sample_rate=44100):
 
         super().__init__(name, parameters, block_size, sample_rate)
