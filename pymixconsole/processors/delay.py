@@ -56,6 +56,7 @@ class Delay(Processor):
 
             if data.ndim < 2:
                 data = np.expand_dims(data, axis=1)
+                data = np.repeat(data, 2, axis=1)
 
             out, self.buffer, self.read_idx, self.write_idx = n_process(data, out, self.buffer, self.read_idx, self.write_idx,
                                 self.parameters.delay.value, self.parameters.feedback.value,
