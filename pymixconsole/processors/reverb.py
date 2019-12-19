@@ -28,7 +28,7 @@ class Reverb(Processor):
         self.parameters.add(Parameter("room_size",   0.5, "float", processor=self, minimum=0.05, maximum=0.85))
         self.parameters.add(Parameter("damping",     0.1, "float", processor=self, minimum=0.0, maximum=1.0))
         self.parameters.add(Parameter("dry_mix",     0.9, "float", processor=self, minimum=0.0, maximum=1.0, mu=0.9, sigma=0.1))
-        self.parameters.add(Parameter("wet_mix",     0.1, "float", processor=self, minimum=0.0, maximum=1.0, mu=0.05, sigma=0.05))
+        self.parameters.add(Parameter("wet_mix",     0.1, "float", processor=self, minimum=0.0, maximum=1.0, mu=0.1, sigma=0.1))
         self.parameters.add(Parameter("width",       0.7, "float", processor=self, minimum=0.0, maximum=1.0))
 
         self.update(None)
