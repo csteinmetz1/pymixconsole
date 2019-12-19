@@ -49,7 +49,7 @@ class Bus:
         # setup the mixing inputs (channel sends)
         self.parameters = ParameterList()
         for ch_idx in np.arange(n_inputs):
-            self.parameters.add(Parameter(f"ch{ch_idx}-send", self.sends[ch_idx], "float", units="linear", minimum=0.0, maximum=1.0))
+            self.parameters.add(Parameter(f"ch{ch_idx}-send", self.sends[ch_idx], "float", units="dB", minimum=-120.0, maximum=12.0, mu=-12.0, sigma=12.0))
 
         if master:
             self.processors.add(Equaliser(name="master-eq"))
@@ -58,7 +58,7 @@ class Bus:
     def process(self, block):
 
         # create a stereo mixdown of all channels based on send gains
-        sends = [p.value for n, p in self.parameters]
+        sends = [p.db2linear() for n, p in self.parameters]
         bus_buffer = np.sum(block * sends, axis=2)
 
         for processor in self.processors.get_all():

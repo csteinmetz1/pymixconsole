@@ -71,12 +71,23 @@ class Console:
         # setup some FX busses
         self.busses = []
         sends = np.zeros(self.num_channels)
-        self.busses.append(Bus(self.sample_rate, self.block_size, self.num_channels)) # bus 1 - reverb
-        self.busses.append(Bus(self.sample_rate, self.block_size, self.num_channels)) # bus 2 - delay
+        self.busses.append(Bus(self.sample_rate, self.block_size, self.num_channels)) # bus 1 - delay
         self.busses[0].processors.add(Delay(name="delay"))
         self.busses[0].processors.add(Equaliser(name="post-eq"))
+        # set wet = 1 and dry = 0 and do not change them on randomize
+        self.busses[0].processors.get("delay").parameters.dry_mix.value = 0.0
+        self.busses[0].processors.get("delay").parameters.wet_mix.value = 1.0
+        self.busses[0].processors.get("delay").parameters.dry_mix.randomize_value = False
+        self.busses[0].processors.get("delay").parameters.wet_mix.randomize_value = False
+
+        self.busses.append(Bus(self.sample_rate, self.block_size, self.num_channels)) # bus 2 - reverb
         self.busses[1].processors.add(Reverb(name="reverb"))
         self.busses[1].processors.add(Equaliser(name="post-eq"))
+        # set wet = 1 and dry = 0 and do not change them on randomize
+        self.busses[1].processors.get("reverb").parameters.dry_mix.value = 0.0
+        self.busses[1].processors.get("reverb").parameters.wet_mix.value = 1.0
+        self.busses[1].processors.get("reverb").parameters.dry_mix.randomize_value = False
+        self.busses[1].processors.get("reverb").parameters.wet_mix.randomize_value = False
 
         # setup the master bus (which is a special kind of bus)
         self.master = Bus(self.sample_rate, self.block_size, self.num_channels + self.num_busses, master=True)
