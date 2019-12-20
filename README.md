@@ -7,7 +7,20 @@ pip install git+https://github.com/csteinmetz1/pymixconsole
 ```
 
 ## Usage
-Setup a mixing console with a set of tracks from a multitrack project and apply processing per block.
+Setup a mixing `console` with a set of tracks from a multitrack project and apply processing per block.
+By default, a `console` will contain n channels and each channel will have a series of default processors:
+
+``` gain -> polarity inverter -> parametric EQ -> compressor -> gain (fader) -> stereo panner ```
+
+These are setup in such a way that if you do not modify their settings the signal should pass largely unprocessed. 
+Additionally a `console` is initialized with two effect busses, one for reverb and one for delay. 
+Finally there is a master bus which sums the output of all the busses and channels and then applies a simple
+processing chain:
+
+``` parametric EQ -> compressor ```
+
+In the example below you can see how to initialize a `console` and then pass multitrack data into the console
+and process it block by block to get the output.
 
 ## Basic processing
 
