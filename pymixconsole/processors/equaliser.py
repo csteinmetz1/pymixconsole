@@ -5,21 +5,21 @@ from ..parameter import Parameter
 from ..parameter_list import ParameterList
 from ..components.irrfilter import IIRfilter
 
-MIN_GAIN = -24.0
-MAX_GAIN =  24.0
-MIN_Q    =   0.1
-MAX_Q    =  10.0
-
 class Equaliser(Processor):
     """ Five band parametreic equaliser ( two shelves and three central bands )
 
-    All gains are set in dB values and range from -32.0 dB to +12.0 dB.
+    All gains are set in dB values and range from `MIN_GAIN` dB to `MAX_GAIN` dB.
     This processor is implemented as cascade of five biquad IIR filters
     that are implemented using the infamous cookbook formulae from RBJ.
 
     """
-    def __init__(self, name="Equaliser", block_size=512, sample_rate=44100):
+    def __init__(self, name="Equaliser", block_size=512, sample_rate=44100, gain_range=(-24,24), q_range=(0.1, 10.0)):
         super().__init__(name, None, block_size, sample_rate)
+
+        MIN_GAIN = gain_range[0]
+        MAX_GAIN = gain_range[1]
+        MIN_Q    = q_range[0]
+        MAX_Q    = q_range[1]
 
         self.parameters = ParameterList()
         self.parameters.add(Parameter("bypass",            False, "bool",  processor=None))
@@ -79,6 +79,10 @@ class Equaliser(Processor):
 
         band = '_'.join(parameter_name.split('_')[:2])
         self.update_filter(band)
+
+    def reset_state(self):
+        for band, iirfilter in self.filters.items():
+            iirfilter.reset_state()
 
     def process(self, data):
         
