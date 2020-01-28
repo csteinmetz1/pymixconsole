@@ -22,7 +22,7 @@ class Equaliser(Processor):
         MAX_Q    = q_range[1]
 
         self.parameters = ParameterList()
-        self.parameters.add(Parameter("bypass",            False, "bool",  processor=None))
+        self.parameters.add(Parameter("bypass",            False, "bool",  processor=None, p=0.1))
         # low shelf parameters ----------------------------------------------------------------------------------------------
         self.parameters.add(Parameter("low_shelf_gain",      0.0, "float", processor=self, minimum=MIN_GAIN, maximum=MAX_GAIN, mu=0.0, sigma=6.0))
         self.parameters.add(Parameter("low_shelf_freq",     80.0, "float", processor=self, minimum=20.0,     maximum=1000.0))

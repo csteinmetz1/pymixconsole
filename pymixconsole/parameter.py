@@ -109,7 +109,11 @@ class Parameter(object):
             elif self.kind == "string":
                 self.value = np.random.choice(self.options)
             elif self.kind == "bool":
-                self.value = np.random.choice([True, False])
+                if not hasattr(self, "p"):
+                    p = 0.5
+                else:
+                    p = self.p
+                self.value = np.random.choice([True, False], p=[p, 1-p])
         elif distribution == "normal":
             if self.kind == "int":
                 raise NotImplementedError("Can only use 'uniform' for int types not 'normal'.")
