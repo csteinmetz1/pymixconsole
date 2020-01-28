@@ -84,11 +84,14 @@ class Equaliser(Processor):
         for band, iirfilter in self.filters.items():
             iirfilter.reset_state()
 
-    def process(self, data):
+    def process(self, data, hard_clip=True):
         
         if not self.parameters.bypass.value:
             for band, irrfilter in self.filters.items():
                 data = irrfilter.apply_filter(data)
+
+        if hard_clip:
+            data = np.clip(data, -1.0, 1.0)
 
         return data
 
