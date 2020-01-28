@@ -13,7 +13,7 @@ class Equaliser(Processor):
     that are implemented using the infamous cookbook formulae from RBJ.
 
     """
-    def __init__(self, name="Equaliser", block_size=512, sample_rate=44100, gain_range=(-24,24), q_range=(0.1, 10.0)):
+    def __init__(self, name="Equaliser", block_size=512, sample_rate=44100, gain_range=(-24,24), q_range=(0.1, 10.0), hard_clip=False):
         super().__init__(name, None, block_size, sample_rate)
 
         MIN_GAIN = gain_range[0]
@@ -43,6 +43,7 @@ class Equaliser(Processor):
         self.parameters.add(Parameter("high_shelf_freq",  10000.0, "float", processor=self, minimum=8000.0,  maximum=20000.0))
 
         self.bands, self.filters = self.setup_filters()
+        self.hard_clip = hard_clip
 
     def setup_filters(self):
 
@@ -84,13 +85,13 @@ class Equaliser(Processor):
         for band, iirfilter in self.filters.items():
             iirfilter.reset_state()
 
-    def process(self, data, hard_clip=True):
+    def process(self, data):
         
         if not self.parameters.bypass.value:
             for band, irrfilter in self.filters.items():
                 data = irrfilter.apply_filter(data)
 
-        if hard_clip:
+        if self.hard_clip:
             data = np.clip(data, -1.0, 1.0)
 
         return data
