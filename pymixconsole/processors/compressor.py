@@ -57,12 +57,12 @@ class Compressor(Processor):
         super().__init__(name, None, block_size, sample_rate)
 
         self.parameters = ParameterList()
-        self.parameters.add(Parameter("bypass",       False,  "bool",             processor=self))
-        self.parameters.add(Parameter("threshold",      0.0, "float", units="dB", processor=self, minimum=-80.0,  maximum=0.0, mu=-6.0, sigma=2.0))
-        self.parameters.add(Parameter("attack_time",   10.0, "float", units="ms", processor=self, minimum=0.1, maximum=500.0))
-        self.parameters.add(Parameter("release_time", 100.0, "float", units="ms", processor=self, minimum=1.0, maximum=4000.0))
-        self.parameters.add(Parameter("ratio",          2.0, "float",             processor=self, minimum=  1.0,  maximum=20.0))
-        self.parameters.add(Parameter("makeup_gain",    0.0, "float", units="dB", processor=self, minimum=-12.0,  maximum=24.0))
+        self.parameters.add(Parameter("bypass",       False,  "bool",             processor=self, p=0.1))
+        self.parameters.add(Parameter("threshold",      0.0, "float", units="dB", processor=self, minimum=-60.0, maximum=0.0))
+        self.parameters.add(Parameter("attack_time",    2.0, "float", units="ms", processor=self, minimum=0.1,   maximum=100.0))
+        self.parameters.add(Parameter("release_time", 300.0, "float", units="ms", processor=self, minimum=10.0,  maximum=1000.0))
+        self.parameters.add(Parameter("ratio",          2.0, "float",             processor=self, minimum=1.0,   maximum=100.0))
+        self.parameters.add(Parameter("makeup_gain",    0.0, "float", units="dB", processor=self, minimum=-12.0, maximum=12.0))
 
         self.yL_prev = 0
 
