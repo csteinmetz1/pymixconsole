@@ -42,7 +42,7 @@ class Channel():
         for processor in self.processors.get_all():
             processor.reset()
 
-    def randomize(self, shuffle=False):
+    def randomize(self, shuffle=True):
 
         # randomize each processor configuration
         for processor in self.get_all_processors():   
@@ -52,28 +52,91 @@ class Channel():
         if shuffle:
             self.processors.shuffle()
 
-    def serialize(self, **kwargs):
+    def serialize(self):
 
         serialized_processors = {"pre_processors"  : [],
                                  "core_processors" : [],
                                  "post_processors" : []}
 
         for idx, processor in enumerate(self.pre_processors.get_all()):
-            serialized_processor = {processor.name : processor.parameters.serialize(**kwargs)}
+            serialized_processor = {processor.name : processor.parameters.serialize()}
             serialized_processor[processor.name]["order"] = idx
             serialized_processors["pre_processors"].append(serialized_processor)
 
         for idx, processor in enumerate(self.processors.get_all()):
-            serialized_processor = {processor.name : processor.parameters.serialize(**kwargs)}
+            serialized_processor = {processor.name : processor.parameters.serialize()}
             serialized_processor[processor.name]["order"] = idx
             serialized_processors["core_processors"].append(serialized_processor)
 
         for idx, processor in enumerate(self.post_processors.get_all()):
-            serialized_processor = {processor.name : processor.parameters.serialize(**kwargs)}
+            serialized_processor = {processor.name : processor.parameters.serialize()}
             serialized_processor[processor.name]["order"] = idx
             serialized_processors["post_processors"].append(serialized_processor)
 
         return serialized_processors
+
+    def vectorize(self, static_order=None, include_order=True):
+        """ Create a vector of all processors with their parameter values.
+
+        This will iterate all of the processors in section of the channel 
+        (i.e. pre, core, and post processors) calling the vectorize method
+        for each of those processors. 
+
+        The ordering of the vectorized parameters will follow that of the order
+        of the processors within the channel's `ProcessorList` objects. There is
+        an exception for the core processors since these processors can have dynamic 
+        ordering (when calling the `randomize()` method on the `channel`). 
+
+        Since we may want the ordering of the processor parameters to remain constant
+        when the ordering of the core processors is shuffled there is the option
+        to pass a `static_order` list which contains strings of the names of all 
+        of the processors in the core `ProcessorList` object.
+
+        e.g.
+        >> static_order = ["eq", "compressor"]
+
+        Note: make sure to use the same strings as specified in the `processor.name`
+        attribute for each processor object. If you omit a processor from this list
+        it will not be included in the vectorized parameters. 
+
+        The `include_order` flag will determine whether or not we append a integer 
+        at the end of the processors vectorized parameters which specifies its order
+        in the signal processing chain. This is essentially required when the 
+        `static_order` list is provided, otherwise there will be confusion about the
+        correspondence between the processors and their vectorized parameters. 
+        """
+        vals = []
+
+        # first vectorize the pre-processors
+        for idx, processor in enumerate(self.pre_processors.get_all()):
+            vec = processor.vectorize()
+            vec.append(idx)
+            for v in vec:
+                vals.append(v)
+        # now go over the core processors (which can have dynamic ordering)
+        if static_order is not None:
+            for processor_name in static_order:
+                for idx, processor in enumerate(self.processors.get_all()):
+                    if processor.name == processor_name:
+                        vec = processor.vectorize()
+                        if include_order:
+                            vec.append(idx)
+                        for v in vec:
+                            vals.append(v)
+        else:
+            for idx, processor in enumerate(self.processors.get_all()):
+                vec = processor.vectorize()
+                if include_order:
+                    vec.append(idx)
+                for v in vec:
+                    vals.append(v)
+        # finally vectorize the post-processors
+        for idx, processor in enumerate(self.post_processors.get_all()):
+            vec = processor.vectorize()
+            vec.append(idx)
+            for v in vec:
+                vals.append(v)
+        return vals
 
     def get_all_processors(self):
         return self.pre_processors.get_all() + self.processors.get_all() + self.post_processors.get_all()

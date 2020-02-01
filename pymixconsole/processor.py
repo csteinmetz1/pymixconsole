@@ -20,6 +20,54 @@ class Processor():
             if parameter.randomize_value:
                 parameter.randomize()
 
+    def serialize(self):
+        """ Create dict with details on all parameter values.
+
+        This will create a dictionary with each parameter value along with
+        its minimum and maximum value (if float or int), the options (if string),
+        or simply its value if its a boolean value. 
+
+        """
+        return self.parameters.serialize()
+
+    def vectorize(self):
+        """ Create a list with normalized parameter values.
+
+        This method will seralize all the parameters and then use the
+        approproaite method to normalize all values between 0 and 1, 
+        or perform one hot encoding for string values. 
+
+        Parameters always appear in the same order, based on when
+        they were created and added to the processors's ParameterList.
+
+        """
+        vals = []
+        for name, param in self.serialize().items():
+            # check if there is a min and max (float or int)
+            if ("min" in param) and ("max" in param):
+                if param["max"] - param["min"] == 0:
+                    val = 0
+                else:
+                    val = (param["value"] - param["min"]) / (param["max"] - param["min"])
+            # check if there are options (string)
+            elif "options" in param:
+                n_options = len(param["options"])
+                val = np.zeros(n_options)
+                index = param["options"].index(param["value"])
+                val[index] = 1
+                val = list(val)
+            # otherwise its a boolean case
+            else:
+                val = param["value"] / 1
+
+            # if we have one-hot-encoded vector append elements one by one
+            if isinstance(val, list):
+                for v in val:
+                    vals.append(v)
+            else:
+                vals.append(val)
+        return vals
+
     @property
     def parameters(self):
         return self._parameters

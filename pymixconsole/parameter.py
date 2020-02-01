@@ -154,26 +154,12 @@ class Parameter(object):
             self.processor.update(self.name)
 
     def serialize(self, normalize=False, one_hot_encode=False):
-
-        # if this is a string then we use one hot encoding
-        if self.kind == "string":
-            if one_hot_encode:
-                val = np.zeros(len(self.options))
-                index = self.options.index(self.value)
-                val[index] = 1
-            else:
-                val = self.value
+        if self.kind in ["float", "int"]:
+            val = {"value" : self.value, "min" : self.min, "max" : self.max}
         elif self.kind == "bool":
-            val = float(self.value)
-        else:
-            if normalize:
-                if  self.max - self.min == 0:
-                    val = 0
-                else:
-                    val = (self.value - self.min) / (self.max - self.min)
-            else:
-                val = self.value
-        
+            val = {"value" : self.value}
+        elif self.kind == "string":
+            val = {"value" : self.value, "options" : self.options}
         return val
 
     @property
