@@ -37,7 +37,7 @@ class Distortion(Processor):
 
         if not parameters:
             self.parameters = ParameterList()
-            self.parameters.add(Parameter("bypass",     False, "bool",   processor=self))
+            self.parameters.add(Parameter("bypass",     False, "bool",   processor=self, p=0.1))
             self.parameters.add(Parameter("mode",      "soft", "string", processor=None, options=["soft", "hard", "infinite"]))
             self.parameters.add(Parameter("threshold",    0.0, "float",  processor=None, units="dB", maximum=0.0, minimum=-80.0, mu=0.0, sigma=6.0))
             self.parameters.add(Parameter("factor",       0.0, "float",  processor=None, maximum=10.0, minimum=0.0, mu=0.3, sigma=0.1))

@@ -24,12 +24,12 @@ class Reverb(Processor):
         super().__init__(name, None, block_size, sample_rate)
 
         self.parameters = ParameterList()
-        self.parameters.add(Parameter("bypass",    False, "bool",  processor=self, randomize_value=False))
+        self.parameters.add(Parameter("bypass",    False, "bool",  processor=self, p=0.1))
         self.parameters.add(Parameter("room_size",   0.5, "float", processor=self, minimum=0.05, maximum=0.85))
-        self.parameters.add(Parameter("damping",     0.1, "float", processor=self, minimum=0.0, maximum=1.0))
-        self.parameters.add(Parameter("dry_mix",     0.9, "float", processor=self, minimum=0.0, maximum=1.0, mu=0.9, sigma=0.1))
-        self.parameters.add(Parameter("wet_mix",     0.1, "float", processor=self, minimum=0.0, maximum=1.0, mu=0.1, sigma=0.1))
-        self.parameters.add(Parameter("width",       0.7, "float", processor=self, minimum=0.0, maximum=1.0))
+        self.parameters.add(Parameter("damping",     0.1, "float", processor=self, minimum=0.0,  maximum=1.0))
+        self.parameters.add(Parameter("dry_mix",     0.9, "float", processor=self, minimum=0.0,  maximum=1.0))
+        self.parameters.add(Parameter("wet_mix",     0.1, "float", processor=self, minimum=0.0,  maximum=1.0))
+        self.parameters.add(Parameter("width",       0.7, "float", processor=self, minimum=0.0,  maximum=1.0))
 
         self.update(None)
 
