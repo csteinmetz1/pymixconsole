@@ -39,6 +39,8 @@ class Reverb(Processor):
             dataL = data[:,0]
             if data.shape[1] == 2:
                 dataR = data[:,1]
+            else:
+                dataR = data[:,0]
         else:
             dataL = data
             dataR = data
@@ -46,12 +48,10 @@ class Reverb(Processor):
         output = np.zeros((data.shape[0], 2))
 
         if self.parameters.bypass.value:
-
             output[:,0] = dataL
             output[:,1] = dataR
 
         else:   
-
             xL, xR = self.process_filters(dataL.copy(), dataR.copy())
 
             wet1_g = self.parameters.wet_mix.value * ((self.parameters.width.value/2) + 0.5)
