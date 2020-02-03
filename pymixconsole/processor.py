@@ -30,7 +30,7 @@ class Processor():
         """
         return self.parameters.serialize()
 
-    def vectorize(self):
+    def vectorize(self, **kwargs):
         """ Create a list with normalized parameter values.
 
         This method will seralize all the parameters and then use the
