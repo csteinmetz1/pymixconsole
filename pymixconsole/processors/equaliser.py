@@ -3,7 +3,7 @@ import numpy as np
 from ..processor import Processor
 from ..parameter import Parameter
 from ..parameter_list import ParameterList
-from ..components.irrfilter import IIRfilter
+from ..components.iirfilter import IIRfilter
 
 class Equaliser(Processor):
     """ Five band parametreic equaliser ( two shelves and three central bands )
@@ -86,7 +86,7 @@ class Equaliser(Processor):
             iirfilter.reset_state()
 
     def process(self, data):
-        
+
         if not self.parameters.bypass.value:
             for band, irrfilter in self.filters.items():
                 data = irrfilter.apply_filter(data)

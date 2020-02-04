@@ -31,11 +31,11 @@ class IIRfilter(object):
         self.__rate = rate
         self.__filter_type = filter_type
 
+        self.__n_channels = n_channels
+        self.__passband_gain = passband_gain
+
         # calculate biquad coefficients
         self.generate_coefficients()
-
-        self.n_channels = n_channels
-        self.passband_gain = passband_gain
 
     def __str__(self):
         filter_info = dedent("""
@@ -159,6 +159,7 @@ class IIRfilter(object):
             raise ValueError("Invalid filter type", self.filter_type)            
 
         self.b, self.a = np.array([b0, b1, b2])/a0, np.array([a0, a1, a2])/a0
+        self.reset_state()
 
     def apply_filter(self, data):
         """ Apply the IIR filter to an input signal.
@@ -237,3 +238,11 @@ class IIRfilter(object):
     def n_channels(self, n_channels):
         self.__n_channels = n_channels
         self.reset_state()
+
+    @property
+    def passband_gain(self):
+        return self.__passband_gain
+
+    @passband_gain.setter
+    def passband_gain(self, passband_gain):
+        self.__passband_gain = passband_gain
