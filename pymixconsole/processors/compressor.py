@@ -4,7 +4,6 @@ import numpy as np
 from ..processor import Processor
 from ..parameter import Parameter
 from ..parameter_list import ParameterList
-from ..components.irrfilter import IIRfilter
 
 @jit(nopython=True)
 def n_process(data, buffer, threshold, attack_time, release_time, ratio, makeup_gain, sample_rate, yL_prev):
