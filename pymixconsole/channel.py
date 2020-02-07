@@ -75,7 +75,7 @@ class Channel():
 
         return serialized_processors
 
-    def vectorize(self, static_order=None, include_order=True):
+    def vectorize(self, static_order=None, include_order=True, encode_order_type="copy"):
         """ Create a vector of all processors with their parameter values.
 
         This will iterate all of the processors in section of the channel 
@@ -99,7 +99,8 @@ class Channel():
         attribute for each processor object. If you omit a processor from this list
         it will not be included in the vectorized parameters. 
 
-        The `include_order` flag will determine whether or not we append a integer 
+        The `include_order` flag will determine whether or not we append a one-hot 
+        encoded vector or an integer (based upon the keyword argument flag) 
         at the end of the processors vectorized parameters which specifies its order
         in the signal processing chain. This is essentially required when the 
         `static_order` list is provided, otherwise there will be confusion about the
@@ -113,21 +114,36 @@ class Channel():
             vec.append(idx)
             for v in vec:
                 vals.append(v)
+
         # now go over the core processors (which can have dynamic ordering)
         if static_order is not None:
-            for processor_name in static_order:
+            if encode_order_type == "copy":
                 for idx, processor in enumerate(self.processors.get_all()):
-                    if processor.name == processor_name:
+                    for processor_name in static_order:
                         vec = processor.vectorize()
-                        if include_order:
-                            vec.append(idx)
+                        if processor.name != processor_name:
+                            vec = np.zeros(len(vec))
                         for v in vec:
                             vals.append(v)
+                            
+            elif encode_order_type == "one_hot":
+                for processor_name in static_order:
+                    for idx, processor in enumerate(self.processors.get_all()):
+                        if processor.name == processor_name:
+                            vec = processor.vectorize()
+                            for v in vec:
+                                vals.append(v)
         else:
             for idx, processor in enumerate(self.processors.get_all()):
                 vec = processor.vectorize()
                 if include_order:
-                    vec.append(idx)
+                    if encode_order_type == "one_hot":
+                        one_hot = np.zeros(n_proc)
+                        one_hot[idx] = 1
+                        for v in one_hot:
+                            vec.append(v)
+                    else:
+                        vec.append(idx)
                 for v in vec:
                     vals.append(v)
         # finally vectorize the post-processors
@@ -136,6 +152,8 @@ class Channel():
             vec.append(idx)
             for v in vec:
                 vals.append(v)
+
+        print(vals)
         return vals
 
     def get_all_processors(self):
