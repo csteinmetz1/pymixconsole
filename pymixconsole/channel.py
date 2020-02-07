@@ -75,7 +75,7 @@ class Channel():
 
         return serialized_processors
 
-    def vectorize(self, static_order=None, include_order=True, encode_order_type="copy"):
+    def vectorize(self, static_order=None, include_order=True, order_encode_type="copy"):
         """ Create a vector of all processors with their parameter values.
 
         This will iterate all of the processors in section of the channel 
@@ -117,7 +117,7 @@ class Channel():
 
         # now go over the core processors (which can have dynamic ordering)
         if static_order is not None:
-            if encode_order_type == "copy":
+            if order_encode_type == "copy":
                 for idx, processor in enumerate(self.processors.get_all()):
                     for processor_name in static_order:
                         vec = processor.vectorize()
@@ -125,8 +125,8 @@ class Channel():
                             vec = np.zeros(len(vec))
                         for v in vec:
                             vals.append(v)
-                            
-            elif encode_order_type == "one_hot":
+
+            elif order_encode_type == "one_hot":
                 for processor_name in static_order:
                     for idx, processor in enumerate(self.processors.get_all()):
                         if processor.name == processor_name:
@@ -137,7 +137,7 @@ class Channel():
             for idx, processor in enumerate(self.processors.get_all()):
                 vec = processor.vectorize()
                 if include_order:
-                    if encode_order_type == "one_hot":
+                    if order_encode_type == "one_hot":
                         one_hot = np.zeros(n_proc)
                         one_hot[idx] = 1
                         for v in one_hot:
@@ -152,8 +152,6 @@ class Channel():
             vec.append(idx)
             for v in vec:
                 vals.append(v)
-
-        print(vals)
         return vals
 
     def get_all_processors(self):
