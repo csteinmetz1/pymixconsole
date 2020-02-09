@@ -19,8 +19,8 @@ offsetroom   = 0.7
 stereospread = 23
 scalegain    = 0.2
 
-class Reverb(Processor):
-    def __init__(self, name="Reverb", block_size=512, sample_rate=44100):
+class AlgorithmicReverb(Processor):
+    def __init__(self, name="reverb", block_size=512, sample_rate=44100):
         super().__init__(name, None, block_size, sample_rate)
 
         self.parameters = ParameterList()

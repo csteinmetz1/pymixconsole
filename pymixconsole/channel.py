@@ -1,15 +1,7 @@
 import numpy as np
 
 from .processor_list import ProcessorList
-
-from .processors.gain import Gain
-from .processors.delay import Delay
-from .processors.panner import Panner
-from .processors.reverb import Reverb
-from .processors.inverter import PolarityInverter
-from .processors.equaliser import Equaliser
-from .processors.converter import Converter
-from .processors.compressor import Compressor
+from .processors import *
 
 class Channel():
     def __init__(self, sample_rate, block_size):

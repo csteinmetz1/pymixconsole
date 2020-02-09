@@ -5,7 +5,7 @@ import numpy as np
 from graphviz import Digraph
 
 from .channel import Channel
-from .processors import Delay, Reverb, Equaliser
+from .processors import *
 from .bus import Bus
 from .util import logger
 
