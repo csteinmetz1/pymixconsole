@@ -8,20 +8,26 @@ class Channel():
         self.sample_rate = sample_rate
         self.block_size = block_size
 
+        # short-hand for init
+        sr = sample_rate
+        bs = block_size
+
         # pre-processors (order is not shuffled)
-        self.pre_processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)
-        self.pre_processors.add(Gain(name="pre-gain"))  # input gain
-        self.pre_processors.add(PolarityInverter(name="polarity-inverter"))
+        self.pre_processors = ProcessorList(block_size=bs, sample_rate=sr)
+        self.pre_processors.add(Gain(name="pre-gain", block_size=bs, sample_rate=sr))  # input gain
+        self.pre_processors.add(PolarityInverter(name="polarity-inverter", block_size=bs, sample_rate=sr))
 
         # core insert processors (order is shuffled on randomize)                           
-        self.processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)
-        self.processors.add(Equaliser(name="eq"))
-        self.processors.add(Compressor(name="compressor"))
+        self.processors = ProcessorList(block_size=bs, sample_rate=sr)
+        self.processors.add(Equaliser(name="eq", block_size=bs, sample_rate=sr))
+        self.processors.add(Compressor(name="compressor", block_size=bs, sample_rate=sr))
+        self.processors.add(ConvolutionalReverb(name="reverb", block_size=bs, sample_rate=sr))
+        self.processors.add(Delay(name="delay", block_size=bs, sample_rate=sr))
 
         # post-processors (order is not shuffled)
-        self.post_processors = ProcessorList(block_size=block_size, sample_rate=sample_rate)
-        self.post_processors.add(Gain(name="post-gain")) # fader
-        self.post_processors.add(Panner(name="panner"))
+        self.post_processors = ProcessorList(block_size=bs, sample_rate=sr)
+        self.post_processors.add(Gain(name="post-gain", block_size=bs, sample_rate=sr)) # fader
+        self.post_processors.add(Panner(name="panner", block_size=bs, sample_rate=sr))
 
     def process(self, ch_buffer):
 
@@ -103,7 +109,7 @@ class Channel():
         # first vectorize the pre-processors
         for idx, processor in enumerate(self.pre_processors.get_all()):
             vec = processor.vectorize()
-            vec.append(idx)
+            #vec.append(idx)
             for v in vec:
                 vals.append(v)
 
@@ -112,7 +118,7 @@ class Channel():
             if order_encode_type == "copy":
                 for idx, processor in enumerate(self.processors.get_all()):
                     for processor_name in static_order:
-                        vec = processor.vectorize()
+                        vec = self.processors.get(processor_name).vectorize()
                         if processor.name != processor_name:
                             vec = np.zeros(len(vec))
                         for v in vec:
@@ -141,7 +147,7 @@ class Channel():
         # finally vectorize the post-processors
         for idx, processor in enumerate(self.post_processors.get_all()):
             vec = processor.vectorize()
-            vec.append(idx)
+            #vec.append(idx)
             for v in vec:
                 vals.append(v)
         return vals
