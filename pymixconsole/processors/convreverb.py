@@ -34,13 +34,15 @@ class ConvolutionalReverb(Processor):
         if self.parameters.bypass.value:
             return data
         else:
-            self.X = np.roll(self.X, 1, axis=2)       # make space for the new frame
+        
             x = np.pad(data, ((0, self.block_size)))  # zero pad the input frame
             x = np.expand_dims(x, 1)                  # if input is mono copy input to R
             x = np.repeat(x, 2, axis=1)
+
+            self.X = np.roll(self.X, 1, axis=2)       # make space for the new frame
             self.X[:,:,0] = np.fft.fft(x, axis=0)     # store the result of the fft for current frame
             Y = np.sum(self.X * self.H, axis=2)       # multiply inputs with filters
-            y = np.fft.ifft(Y, axis=0)                # convert result to the time domain
+            y = np.real(np.fft.ifft(Y, axis=0))       # convert result to the time domain (only take real part)
             wet = y[:self.block_size] + self.overlap  # add the previous overlap to the output
             dry = x[:self.block_size,:]               # grab the dry signal
             self.overlap = y[self.block_size:,:]      # store the overlap for the next frame
@@ -66,7 +68,21 @@ class ConvolutionalReverb(Processor):
             # for now we raise an error. but in the future we would want to automatically resample
             raise RuntimeError(f"Sample rate of impulse {sr} must match sample rate of processor {self.sample_rate}")
 
-        # pad the input to be divsibible by block size
+        # fade out the impulse based on the decay setting
+        fstart = int(self.parameters.decay.value * self.h.shape[0])
+        fstop  = np.min((self.h.shape[0], fstart + int(0.020*self.sample_rate))) # constant 50 ms fade out
+        flen   = fstop - fstart
+
+        # if there is a fade (i.e. decay < 1.0)
+        if flen > 0:
+            fade = np.arange(flen)/flen             # normalized set of indices
+            fade = np.power(0.1, (1-fade) * 5)      # fade gain values with 100 dB of atten
+            fade = np.expand_dims(fade, 1)          # add stereo dim
+            fade = np.repeat(fade, 2, axis=1)       # copy gain to stereo dim
+            self.h[fstart:fstop,:] *= fade          # apply fade
+            self.h = self.h[:fstop]                 # throw away faded samples
+
+        # pad the impulse to be divsibible by block size
         pad = self.block_size - (self.h.shape[0]%self.block_size)
         self.h = np.pad(self.h, ((0,pad),(0,0)))
 
