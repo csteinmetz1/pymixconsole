@@ -80,7 +80,7 @@ class ConvolutionalReverb(Processor):
 
     def update(self, parameter_name):
 
-        self.h = self.impulses[self.parameters.type.value]
+        self.h = self.impulses[self.parameters.type.value].copy()
 
         # fade out the impulse based on the decay setting
         fstart = int(self.parameters.decay.value * self.h.shape[0])
@@ -96,9 +96,13 @@ class ConvolutionalReverb(Processor):
             self.h[fstart:fstop,:] *= fade          # apply fade
             self.h = self.h[:fstop]                 # throw away faded samples
 
+        print("pre", self.h.shape)
+
         # pad the impulse to be divsibible by block size
         pad = self.block_size - (self.h.shape[0]%self.block_size)
         self.h = np.pad(self.h, ((0,pad),(0,0)))
+
+        print("post", self.h.shape)
 
         # split the impulse into blocks of size block_size
         nfilters = self.h.shape[0]//self.block_size
@@ -110,6 +114,8 @@ class ConvolutionalReverb(Processor):
             stop  = start + self.block_size
             # zero pad each chopped impulse at the end to block_size*2 
             self.h_new[:,:,n] = np.pad(self.h[start:stop,:], ((0, self.block_size),(0,0)))
+
+        print("new", self.h_new.shape)
 
         self.h = self.h_new                                         # overwrite the unraveled impulse with the chopped one
         self.H = np.fft.fft(self.h, axis=0)                         # convert to freq domain filters
