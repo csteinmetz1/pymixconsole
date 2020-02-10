@@ -18,7 +18,7 @@ class PolarityInverter(Processor):
 
         if not parameters:
             self.parameters = ParameterList()
-            self.parameters.add(Parameter("invert", False, "bool", processor=None))
+            self.parameters.add(Parameter("invert", False, "bool", processor=None, p=0.2))
 
     def process(self, data):
         return n_process(data, self.parameters.invert.value)
