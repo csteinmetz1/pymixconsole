@@ -26,26 +26,29 @@ class ConvolutionalReverb(Processor):
             self.parameters.add(Parameter("type", "sm-room", "string", processor=self, options=src.keys()))
             self.parameters.add(Parameter("decay",      1.0,  "float", processor=self, minimum=0.0, maximum=1.0))
             self.parameters.add(Parameter("dry_mix",    0.8,  "float", processor=self, minimum=0.0, maximum=1.0))
-            self.parameters.add(Parameter("wet_mix",   0.05,  "float", processor=self, minimum=0.0, maximum=1.0))
+            self.parameters.add(Parameter("wet_mix",    0.1,  "float", processor=self, minimum=0.0, maximum=1.0))
 
         self.update(None)
 
-    def process(self, data):
+    def process(self, x):
         if self.parameters.bypass.value:
-            return data
+            return x
         else:
         
-            x = np.pad(data, ((0, self.block_size)))  # zero pad the input frame
-            x = np.expand_dims(x, 1)                  # if input is mono copy input to R
-            x = np.repeat(x, 2, axis=1)
+            if x.ndim < 2: # if input is mono (samples,) add stereo dim
+                x = np.expand_dims(x, 1)    
+            
+            if x.shape[1] == 1: # if input is mono copy L to R        
+                x = np.repeat(x, 2, axis=1)
 
-            self.X = np.roll(self.X, 1, axis=2)       # make space for the new frame
-            self.X[:,:,0] = np.fft.fft(x, axis=0)     # store the result of the fft for current frame
-            Y = np.sum(self.X * self.H, axis=2)       # multiply inputs with filters
-            y = np.real(np.fft.ifft(Y, axis=0))       # convert result to the time domain (only take real part)
-            wet = y[:self.block_size] + self.overlap  # add the previous overlap to the output
-            dry = x[:self.block_size,:]               # grab the dry signal
-            self.overlap = y[self.block_size:,:]      # store the overlap for the next frame
+            x = np.pad(x, ((0, self.block_size),(0,0))) # zero pad the input frame
+            self.X = np.roll(self.X, 1, axis=2)         # make space for the new frame
+            self.X[:,:,0] = np.fft.fft(x, axis=0)       # store the result of the fft for current frame
+            Y = np.sum(self.X * self.H, axis=2)         # multiply inputs with filters
+            y = np.real(np.fft.ifft(Y, axis=0))         # convert result to the time domain (only take real part)
+            wet = y[:self.block_size] + self.overlap    # add the previous overlap to the output
+            dry = x[:self.block_size,:]                 # grab the dry signal
+            self.overlap = y[self.block_size:,:]        # store the overlap for the next frame
 
             wet *= self.parameters.wet_mix.value      # apply gain to wet signal
             dry *= self.parameters.dry_mix.value      # apply gain to input (dry) signal
