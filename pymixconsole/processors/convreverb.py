@@ -22,8 +22,8 @@ class ConvolutionalReverb(Processor):
 
         if not parameters:
             self.parameters = ParameterList()
-            self.parameters.add(Parameter("bypass",   False,   "bool", processor=None))
-            self.parameters.add(Parameter("type", "sm-room", "string", processor=self, options=src.keys()))
+            self.parameters.add(Parameter("bypass",   False,   "bool", processor=None, p=0.1))
+            self.parameters.add(Parameter("type", "sm-room", "string", processor=self, options=list(src.keys())))
             self.parameters.add(Parameter("decay",      1.0,  "float", processor=self, minimum=0.0, maximum=1.0))
             self.parameters.add(Parameter("dry_mix",    0.8,  "float", processor=self, minimum=0.0, maximum=1.0))
             self.parameters.add(Parameter("wet_mix",    0.1,  "float", processor=self, minimum=0.0, maximum=1.0))
@@ -50,9 +50,9 @@ class ConvolutionalReverb(Processor):
             dry = x[:self.block_size,:]                 # grab the dry signal
             self.overlap = y[self.block_size:,:]        # store the overlap for the next frame
 
-            wet *= self.parameters.wet_mix.value      # apply gain to wet signal
-            dry *= self.parameters.dry_mix.value      # apply gain to input (dry) signal
-            out = wet + dry                           # mix wet and dry signals
+            wet *= self.parameters.wet_mix.value        # apply gain to wet signal
+            dry *= self.parameters.dry_mix.value        # apply gain to input (dry) signal
+            out = wet + dry                             # mix wet and dry signals
 
             return out
 
@@ -62,9 +62,9 @@ class ConvolutionalReverb(Processor):
         curdir = pathlib.Path(__file__).parent.absolute()
         filename = os.path.join(curdir, "..", ir_dir, src[self.parameters.type.value])
 
-        sr, self.h = wavfile.read(filename)       # load the audio file for correct impulse response
-        self.h = self.h.astype(np.double)/(2**16) # convert from 16 bit into to 64 bit float
-        self.h *= 0.125                           # perform additional scaling for headroom
+        sr, self.h = wavfile.read(filename)        # load the audio file for correct impulse response
+        self.h = self.h.astype(np.double)/(2**16)  # convert from 16 bit into to 64 bit float
+        self.h *= 0.125                            # perform additional scaling for headroom
 
         # check if the sample rate matches processor
         if sr != self.sample_rate:
@@ -97,17 +97,14 @@ class ConvolutionalReverb(Processor):
         for n in np.arange(nfilters):
             start = n * self.block_size
             stop  = start + self.block_size
+            # zero pad each chopped impulse at the end to block_size*2 
             self.h_new[:,:,n] = np.pad(self.h[start:stop,:], ((0, self.block_size),(0,0)))
 
-        self.h = self.h_new
-
-        # convert to freq domain filters
-        self.H = np.fft.fft(self.h, axis=0)
-        
-        # buffer to store past outputs in freq domain
-        self.X = np.fft.fft(np.zeros((self.h.shape)), axis=0)
-
-        # create a buffer for the time-domain overlap signal
-        self.overlap = np.zeros((self.block_size, self.h.shape[1]))
+        self.h = self.h_new                                         # overwrite the unraveled impulse with the chopped one
+        self.H = np.fft.fft(self.h, axis=0)                         # convert to freq domain filters
+        X_init = np.zeros((self.h.shape))                           # create buffer to store past outputs in freq domai
+        ovrlp_init = np.zeros((self.block_size, self.h.shape[1]))   # create buffer for the time-domain overlap signal
+        self.X = np.fft.fft(X_init, axis=0)                         # convert zero values to freq domain
+        self.overlap = ovrlp_init                                   # store zero values input buffer
 
 
