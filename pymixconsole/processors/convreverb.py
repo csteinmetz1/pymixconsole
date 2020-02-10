@@ -24,11 +24,10 @@ class ConvolutionalReverb(Processor):
         if not parameters:
             self.parameters = ParameterList()
             self.parameters.add(Parameter("bypass",   False,   "bool", processor=None, p=0.1))
-            self.parameters.add(Parameter("type", "sm-room", "string", processor=self, options=list(src.keys())))
+            self.parameters.add(Parameter("type", "sm-room", "string", processor=self, options=["sm-room", "md-room", "lg-room", "hall", "plate"]))
             self.parameters.add(Parameter("decay",      1.0,  "float", processor=self, minimum=0.0, maximum=1.0))
             self.parameters.add(Parameter("dry_mix",    0.8,  "float", processor=self, minimum=0.0, maximum=1.0))
             self.parameters.add(Parameter("wet_mix",    0.1,  "float", processor=self, minimum=0.0, maximum=1.0))
-
 
         self.impulses = {}  # dict to store numpy array for each impulse response
         self.load()         # load all impulses into the dict
@@ -65,7 +64,7 @@ class ConvolutionalReverb(Processor):
         # read all impulse responses from disk and store
         for reverb in self.parameters.type.options:
             curdir = pathlib.Path(__file__).parent.absolute()
-            filename = os.path.join(curdir, "..", ir_dir, src[self.parameters.type.value])
+            filename = os.path.join(curdir, "..", ir_dir, src[reverb])
 
             sr, h = wavfile.read(filename)   # load the audio file for correct impulse response
 
@@ -79,7 +78,10 @@ class ConvolutionalReverb(Processor):
             self.impulses[reverb] = h        # store into dictionary
 
     def update(self, parameter_name):
+        # this should be updated soon so we only update certain parts
+        # based on which parameters change
 
+        # load proper impulse from memory
         self.h = self.impulses[self.parameters.type.value].copy()
 
         # fade out the impulse based on the decay setting
@@ -88,7 +90,7 @@ class ConvolutionalReverb(Processor):
         flen   = fstop - fstart
 
         # if there is a fade (i.e. decay < 1.0)
-        if flen > 0:
+        if flen > 0 and False:
             fade = np.arange(flen)/flen             # normalized set of indices
             fade = np.power(0.1, (1-fade) * 5)      # fade gain values with 100 dB of atten
             fade = np.expand_dims(fade, 1)          # add stereo dim
@@ -96,13 +98,9 @@ class ConvolutionalReverb(Processor):
             self.h[fstart:fstop,:] *= fade          # apply fade
             self.h = self.h[:fstop]                 # throw away faded samples
 
-        print("pre", self.h.shape)
-
         # pad the impulse to be divsibible by block size
         pad = self.block_size - (self.h.shape[0]%self.block_size)
         self.h = np.pad(self.h, ((0,pad),(0,0)))
-
-        print("post", self.h.shape)
 
         # split the impulse into blocks of size block_size
         nfilters = self.h.shape[0]//self.block_size
@@ -114,8 +112,6 @@ class ConvolutionalReverb(Processor):
             stop  = start + self.block_size
             # zero pad each chopped impulse at the end to block_size*2 
             self.h_new[:,:,n] = np.pad(self.h[start:stop,:], ((0, self.block_size),(0,0)))
-
-        print("new", self.h_new.shape)
 
         self.h = self.h_new                                         # overwrite the unraveled impulse with the chopped one
         self.H = np.fft.fft(self.h, axis=0)                         # convert to freq domain filters
