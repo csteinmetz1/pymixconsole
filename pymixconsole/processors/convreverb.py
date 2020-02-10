@@ -1,5 +1,6 @@
 import os
 import pathlib
+import warnings
 import numpy as np
 from scipy.io import wavfile
 
@@ -28,7 +29,10 @@ class ConvolutionalReverb(Processor):
             self.parameters.add(Parameter("dry_mix",    0.8,  "float", processor=self, minimum=0.0, maximum=1.0))
             self.parameters.add(Parameter("wet_mix",    0.1,  "float", processor=self, minimum=0.0, maximum=1.0))
 
-        self.update(None)
+
+        self.impulses = {}  # dict to store numpy array for each impulse response
+        self.load()         # load all impulses into the dict
+        self.update(None)   # pre-process current impulse ready for application
 
     def process(self, x):
         if self.parameters.bypass.value:
@@ -56,20 +60,27 @@ class ConvolutionalReverb(Processor):
 
             return out
 
+    def load(self):
+
+        # read all impulse responses from disk and store
+        for reverb in self.parameters.type.options:
+            curdir = pathlib.Path(__file__).parent.absolute()
+            filename = os.path.join(curdir, "..", ir_dir, src[self.parameters.type.value])
+
+            sr, h = wavfile.read(filename)   # load the audio file for correct impulse response
+
+            # check if the sample rate matches processor
+            if sr != self.sample_rate:
+                # for now we raise an error. but in the future we would want to automatically resample
+                raise RuntimeError(f"Sample rate of impulse {sr} must match sample rate of processor {self.sample_rate}")
+
+            h = h.astype(np.double)/(2**16)  # convert from 16 bit into to 64 bit float
+            h *= 0.125                       # perform additional scaling for headroom
+            self.impulses[reverb] = h        # store into dictionary
+
     def update(self, parameter_name):
 
-        # construct file path to the impulse response
-        curdir = pathlib.Path(__file__).parent.absolute()
-        filename = os.path.join(curdir, "..", ir_dir, src[self.parameters.type.value])
-
-        sr, self.h = wavfile.read(filename)        # load the audio file for correct impulse response
-        self.h = self.h.astype(np.double)/(2**16)  # convert from 16 bit into to 64 bit float
-        self.h *= 0.125                            # perform additional scaling for headroom
-
-        # check if the sample rate matches processor
-        if sr != self.sample_rate:
-            # for now we raise an error. but in the future we would want to automatically resample
-            raise RuntimeError(f"Sample rate of impulse {sr} must match sample rate of processor {self.sample_rate}")
+        self.h = self.impulses[self.parameters.type.value]
 
         # fade out the impulse based on the decay setting
         fstart = int(self.parameters.decay.value * self.h.shape[0])
