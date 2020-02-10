@@ -39,11 +39,11 @@ class Delay(Processor):
 
         if not parameters:
             self.parameters = ParameterList()
-            self.parameters.add(Parameter("bypass", False, "bool",  processor=None, p=0.1))
-            self.parameters.add(Parameter("delay",   5000, "int",   processor=self, units="samples", minimum=0, maximum=65536))
-            self.parameters.add(Parameter("feedback", 0.3, "float", processor=self, units="samples", minimum=0, maximum=1.0, mu=0.3, sigma=0.2))
-            self.parameters.add(Parameter("dry_mix",  0.9, "float", processor=self, units="samples", minimum=0, maximum=1.0, mu=0.9, sigma=0.05))
-            self.parameters.add(Parameter("wet_mix",  0.4, "float", processor=self, units="samples", minimum=0, maximum=1.0, mu=0.4, sigma=0.4))
+            self.parameters.add(Parameter("bypass", False, "bool",  processor=None, p=0.8))
+            self.parameters.add(Parameter("delay",   5000, "int",   processor=self, units="samples", minimum=0, maximum=sample_rate))
+            self.parameters.add(Parameter("feedback", 0.3, "float", processor=self, units="samples", minimum=0, maximum=1.0))
+            self.parameters.add(Parameter("dry_mix",  0.9, "float", processor=self, units="samples", minimum=0, maximum=1.0))
+            self.parameters.add(Parameter("wet_mix",  0.4, "float", processor=self, units="samples", minimum=0, maximum=1.0))
 
         self.buffer = np.zeros((65536, 2))
         self.read_idx = 0
@@ -58,7 +58,8 @@ class Delay(Processor):
                 data = np.expand_dims(data, axis=1)
                 data = np.repeat(data, 2, axis=1)
 
-            out, self.buffer, self.read_idx, self.write_idx = n_process(data, out, self.buffer, self.read_idx, self.write_idx,
+            out, self.buffer, self.read_idx, self.write_idx = n_process(data, out,
+                                self.buffer, self.read_idx, self.write_idx,
                                 self.parameters.delay.value, self.parameters.feedback.value,
                                 self.parameters.dry_mix.value, self.parameters.wet_mix.value)
 
