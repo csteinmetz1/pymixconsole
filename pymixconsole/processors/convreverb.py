@@ -34,16 +34,16 @@ class ConvolutionalReverb(Processor):
         self.update(None)   # pre-process current impulse ready for application
 
     def process(self, x):
+
+        if x.ndim < 2: # if input is mono (samples,) add stereo dim
+            x = np.expand_dims(x, 1)    
+        
+        if x.shape[1] == 1: # if input is mono copy L to R        
+            x = np.repeat(x, 2, axis=1)
+
         if self.parameters.bypass.value:
             return x
         else:
-        
-            if x.ndim < 2: # if input is mono (samples,) add stereo dim
-                x = np.expand_dims(x, 1)    
-            
-            if x.shape[1] == 1: # if input is mono copy L to R        
-                x = np.repeat(x, 2, axis=1)
-
             x = np.pad(x, ((0, self.block_size),(0,0))) # zero pad the input frame
             self.X = np.roll(self.X, 1, axis=2)         # make space for the new frame
             self.X[:,:,0] = np.fft.fft(x, axis=0)       # store the result of the fft for current frame
