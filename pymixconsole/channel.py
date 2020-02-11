@@ -154,3 +154,18 @@ class Channel():
 
     def get_all_processors(self):
         return self.pre_processors.get_all() + self.processors.get_all() + self.post_processors.get_all()
+
+    def params_to_file(self, output_file="ch-params.txt"):
+        """ Save a text file containing the parameters and vectorized verions for each proecessor. 
+
+        """
+        with open(output_file, "w") as fp:
+            for proc in self.get_all_processors():
+                fp.write(f"{proc.name}: ")
+                for v in proc.vectorize():
+                    fp.write(f"{v:0.2f} ")
+                fp.write("\n")
+        
+            fp.write("channel: ")
+            for v in self.vectorize(static_order=["eq", "compressor", "reverb", "delay"]):
+                fp.write(f"{v:0.2f} ")
