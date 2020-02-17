@@ -1,3 +1,5 @@
+FFT_TYPE = "scipy"
+
 import os
 import pathlib
 import warnings
@@ -7,6 +9,11 @@ from scipy.io import wavfile
 from ..parameter import Parameter
 from ..processor import Processor
 from ..parameter_list import ParameterList
+
+if FFT_TYPE == "scipy": 
+    from scipy.fftpack import fft, ifft
+else:                   
+    from numpy.fft import fft, ifft
 
 # Impulse responses
 ir_dir = "irs"
@@ -46,9 +53,9 @@ class ConvolutionalReverb(Processor):
         else:
             x = np.pad(x, ((0, self.block_size),(0,0))) # zero pad the input frame
             self.X = np.roll(self.X, 1, axis=2)         # make space for the new frame
-            self.X[:,:,0] = np.fft.fft(x, axis=0)       # store the result of the fft for current frame
+            self.X[:,:,0] = fft(x, axis=0)       # store the result of the fft for current frame
             Y = np.sum(self.X * self.H, axis=2)         # multiply inputs with filters
-            y = np.real(np.fft.ifft(Y, axis=0))         # convert result to the time domain (only take real part)
+            y = np.real(ifft(Y, axis=0))         # convert result to the time domain (only take real part)
             wet = y[:self.block_size] + self.overlap    # add the previous overlap to the output
             dry = x[:self.block_size,:]                 # grab the dry signal
             self.overlap = y[self.block_size:,:]        # store the overlap for the next frame
@@ -81,43 +88,44 @@ class ConvolutionalReverb(Processor):
         # this should be updated soon so we only update certain parts
         # based on which parameters change
 
-        # load proper impulse from memory
-        self.h = self.impulses[self.parameters.type.value].copy()
+        if parameter_name in ["type", "decay"]:
+            # load proper impulse from memory
+            self.h = self.impulses[self.parameters.type.value].copy()
 
-        # fade out the impulse based on the decay setting
-        fstart = int(self.parameters.decay.value * self.h.shape[0])
-        fstop  = np.min((self.h.shape[0], fstart + int(0.020*self.sample_rate))) # constant 50 ms fade out
-        flen   = fstop - fstart
+            # fade out the impulse based on the decay setting
+            fstart = int(self.parameters.decay.value * self.h.shape[0])
+            fstop  = np.min((self.h.shape[0], fstart + int(0.020*self.sample_rate))) # constant 50 ms fade out
+            flen   = fstop - fstart
 
-        # if there is a fade (i.e. decay < 1.0)
-        if flen > 0 and False:
-            fade = np.arange(flen)/flen             # normalized set of indices
-            fade = np.power(0.1, (1-fade) * 5)      # fade gain values with 100 dB of atten
-            fade = np.expand_dims(fade, 1)          # add stereo dim
-            fade = np.repeat(fade, 2, axis=1)       # copy gain to stereo dim
-            self.h[fstart:fstop,:] *= fade          # apply fade
-            self.h = self.h[:fstop]                 # throw away faded samples
+            # if there is a fade (i.e. decay < 1.0)
+            if flen > 0 and False:
+                fade = np.arange(flen)/flen             # normalized set of indices
+                fade = np.power(0.1, (1-fade) * 5)      # fade gain values with 100 dB of atten
+                fade = np.expand_dims(fade, 1)          # add stereo dim
+                fade = np.repeat(fade, 2, axis=1)       # copy gain to stereo dim
+                self.h[fstart:fstop,:] *= fade          # apply fade
+                self.h = self.h[:fstop]                 # throw away faded samples
 
-        # pad the impulse to be divsibible by block size
-        pad = self.block_size - (self.h.shape[0]%self.block_size)
-        self.h = np.pad(self.h, ((0,pad),(0,0)))
+            # pad the impulse to be divsibible by block size
+            pad = self.block_size - (self.h.shape[0]%self.block_size)
+            self.h = np.pad(self.h, ((0,pad),(0,0)))
 
-        # split the impulse into blocks of size block_size
-        nfilters = self.h.shape[0]//self.block_size
-        self.h_new = np.empty((self.block_size*2, self.h.shape[1], nfilters))
+            # split the impulse into blocks of size block_size
+            nfilters = self.h.shape[0]//self.block_size
+            self.h_new = np.empty((self.block_size*2, self.h.shape[1], nfilters))
 
-        # manually construct matrix of nfilters
-        for n in np.arange(nfilters):
-            start = n * self.block_size
-            stop  = start + self.block_size
-            # zero pad each chopped impulse at the end to block_size*2 
-            self.h_new[:,:,n] = np.pad(self.h[start:stop,:], ((0, self.block_size),(0,0)))
+            # manually construct matrix of nfilters
+            for n in np.arange(nfilters):
+                start = n * self.block_size
+                stop  = start + self.block_size
+                # zero pad each chopped impulse at the end to block_size*2 
+                self.h_new[:,:,n] = np.pad(self.h[start:stop,:], ((0, self.block_size),(0,0)))
 
-        self.h = self.h_new                                         # overwrite the unraveled impulse with the chopped one
-        self.H = np.fft.fft(self.h, axis=0)                         # convert to freq domain filters
-        X_init = np.zeros((self.h.shape))                           # create buffer to store past outputs in freq domai
-        ovrlp_init = np.zeros((self.block_size, self.h.shape[1]))   # create buffer for the time-domain overlap signal
-        self.X = np.fft.fft(X_init, axis=0)                         # convert zero values to freq domain
-        self.overlap = ovrlp_init                                   # store zero values input buffer
+            self.h = self.h_new                                         # overwrite the unraveled impulse with the chopped one
+            self.H = fft(self.h, axis=0)                         # convert to freq domain filters
+            X_init = np.zeros((self.h.shape))                           # create buffer to store past outputs in freq domai
+            ovrlp_init = np.zeros((self.block_size, self.h.shape[1]))   # create buffer for the time-domain overlap signal
+            self.X = fft(X_init, axis=0)                         # convert zero values to freq domain
+            self.overlap = ovrlp_init                                   # store zero values input buffer
 
 
