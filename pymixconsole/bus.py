@@ -43,7 +43,7 @@ class Bus:
         # setup the mixing inputs (channel sends)
         self.parameters = ParameterList()
         for ch_idx in np.arange(n_inputs):
-            self.parameters.add(Parameter(f"ch{ch_idx}-send", self.sends[ch_idx], "float", units="dB", minimum=-120.0, maximum=12.0, mu=-12.0, sigma=12.0))
+            self.parameters.add(Parameter(f"ch{ch_idx}-send", self.sends[ch_idx], "float", units="dB", minimum=-120.0, maximum=12.0, mu=-30.0, sigma=12.0))
 
         if master:
             self.processors.add(Equaliser(name="master-eq"))

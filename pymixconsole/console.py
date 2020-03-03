@@ -7,7 +7,7 @@ from graphviz import Digraph
 from .channel import Channel
 from .processors import *
 from .bus import Bus
-from .util import logger
+from .util import logger, jsonencoder
 
 class Console:
     """ Top level interface for the mixing console. 
@@ -22,7 +22,7 @@ class Console:
 
     """
 
-    def __init__(self, multitrack=None, block_size=512, sample_rate=44100, num_channels=1, num_busses=1, verbose=False):
+    def __init__(self, multitrack=None, block_size=512, sample_rate=44100, num_channels=1, num_busses=2, verbose=False):
         """ Create a mixing console.
 
         There are two options to intialize a console.
@@ -164,7 +164,7 @@ class Console:
         for bus in self.busses:
             bus.randomize()
 
-    def serialize(self, to_json=None,  **kwargs):
+    def serialize(self, to_json=None, **kwargs):
 
         serialized_console = {"channels" : [], "busses" : [], "master" : None}
 
@@ -178,7 +178,7 @@ class Console:
 
         if to_json:
             with open(to_json, "w") as fp:
-                json.dump(serialized_console, fp)
+                json.dump(serialized_console, fp, cls=jsonencoder.CustomJSONEncoder)
                 self.log.info(f"wrote serialized console paramters to file: '{to_json}'")
 
         return serialized_console
