@@ -11,6 +11,12 @@ class Processor():
     def update(self, parameter_name):
         pass
 
+    def set(self, config):
+        for parameter_name, settings in config.items():
+            parameter = getattr(self.parameters, parameter_name)
+            for setting_name, value in settings.items():
+                setattr(parameter, setting_name, value)
+
     def reset(self):
         for name, parameter in self.parameters.items():
             parameter.reset()
