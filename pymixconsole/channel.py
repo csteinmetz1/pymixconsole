@@ -37,7 +37,7 @@ class Channel():
         return ch_buffer
 
     def reset(self):
-        for processor in self.processors.get_all():
+        for processor in self.get_all_processors():
             processor.reset()
 
     def randomize(self, shuffle=True):
