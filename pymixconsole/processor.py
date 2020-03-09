@@ -21,7 +21,7 @@ class Processor():
         for name, parameter in self.parameters.items():
             parameter.reset()
 
-    def randomize(self):
+    def randomize(self, **kwargs):
         for name, parameter in self.parameters:
             if parameter.randomize_value:
                 parameter.randomize()
