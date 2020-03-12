@@ -18,7 +18,7 @@ class Processor():
                 setattr(parameter, setting_name, value)
 
     def reset(self):
-        for name, parameter in self.parameters.items():
+        for name, parameter in self.parameters:
             parameter.reset()
 
     def randomize(self, **kwargs):
