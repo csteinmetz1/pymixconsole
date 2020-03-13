@@ -33,8 +33,8 @@ class ConvolutionalReverb(Processor):
             self.parameters.add(Parameter("bypass",   False,   "bool", processor=None, p=0.1))
             self.parameters.add(Parameter("type", "sm-room", "string", processor=self, options=["sm-room", "md-room", "lg-room", "hall", "plate"]))
             self.parameters.add(Parameter("decay",      1.0,  "float", processor=self, minimum=0.0, maximum=1.0))
-            self.parameters.add(Parameter("dry_mix",    0.8,  "float", processor=self, minimum=0.0, maximum=1.0))
-            self.parameters.add(Parameter("wet_mix",    0.1,  "float", processor=self, minimum=0.0, maximum=1.0))
+            self.parameters.add(Parameter("dry_mix",    1.0,  "float", processor=self, minimum=0.0, maximum=1.0))
+            self.parameters.add(Parameter("wet_mix",    0.0,  "float", processor=self, minimum=0.0, maximum=1.0))
 
         self.impulses = {}  # dict to store numpy array for each impulse response
         self.load()         # load all impulses into the dict

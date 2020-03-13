@@ -65,16 +65,16 @@ class Compressor(Processor):
 
         self.yL_prev = 0
 
-    def process(self, data):
+    def process(self, x):
 
         if not self.parameters.bypass.value:
             # if input is stereo create mono downmix buffer
-            if data.ndim == 2:
-                buffer = np.squeeze((data[:,0] + data[:,1])) * 0.5
+            if x.ndim == 2:
+                buffer = np.squeeze((x[:,0] + x[:,1])) * 0.5
             else:
-                buffer = data
+                buffer = x
 
-            data, self.yL_prev = n_process(data,
+            x, self.yL_prev = n_process(x,
                         buffer, 
                         self.parameters.threshold.value, 
                         self.parameters.attack_time.value,
@@ -84,7 +84,14 @@ class Compressor(Processor):
                         self.sample_rate,
                         self.yL_prev)
 
-        return data
+        else:
+            if x.ndim < 2: # if input is mono (samples,) add stereo dim
+                x = np.expand_dims(x, 1)    
+        
+            if x.shape[1] == 1: # if input is mono copy L to R        
+                x = np.repeat(x, 2, axis=1)
+
+        return x
 
     def update(self, parameter_name):
         self.yL_prev = 0
