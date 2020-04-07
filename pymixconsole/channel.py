@@ -14,7 +14,7 @@ class Channel():
 
         # pre-processors (order is not shuffled)
         self.pre_processors = ProcessorList(block_size=bs, sample_rate=sr)
-        self.pre_processors.add(Gain(name="pre-gain", block_size=bs, sample_rate=sr))  # input gain
+        self.pre_processors.add(Gain(name="pre-gain", block_size=bs, sample_rate=sr))
         self.pre_processors.add(PolarityInverter(name="polarity-inverter", block_size=bs, sample_rate=sr))
 
         # core insert processors (order is shuffled on randomize)                           
