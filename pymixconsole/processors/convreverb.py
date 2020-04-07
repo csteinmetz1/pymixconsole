@@ -93,9 +93,9 @@ class ConvolutionalReverb(Processor):
                 # for now we raise an error. but in the future we would want to automatically resample
                 raise RuntimeError(f"Sample rate of impulse {sr} must match sample rate of processor {self.sample_rate}")
 
-            h = h.astype(np.double)/(2**16)  # convert from 16 bit into to 64 bit float
+            h = h/32767                      # convert from 16 bit into to 32 bit float
             h *= 0.125                       # perform additional scaling for headroom
-            self.impulses[reverb] = h        # store into dictionary
+            self.impulses[reverb] = h.astype(self.dtype)        # store into dictionary
 
     def update(self, parameter_name):
         # this should be updated soon so we only update certain parts
@@ -112,17 +112,17 @@ class ConvolutionalReverb(Processor):
 
             # if there is a fade (i.e. decay < 1.0)
             if flen > 0 and True:
-                fade = np.arange(flen)/flen             # normalized set of indices
-                fade = np.power(0.1, (1-fade) * 5)      # fade gain values with 100 dB of atten
-                fade = np.expand_dims(fade, 1)          # add stereo dim
-                fade = np.repeat(fade, 2, axis=1)       # copy gain to stereo dim
-                self.h[fstart:fstop,:] *= fade          # apply fade
-                self.h = self.h[:fstop]                 # throw away faded samples
+                fade = np.arange(flen, dtype=self.dtype)/flen # normalized set of indices
+                fade = np.power(0.1, (1-fade) * 5)            # fade gain values with 100 dB of atten
+                fade = np.expand_dims(fade, 1)                # add stereo dim
+                fade = np.repeat(fade, 2, axis=1)             # copy gain to stereo dim
+                self.h[fstart:fstop,:] *= fade                # apply fade
+                self.h = self.h[:fstop]                       # throw away faded samples
 
             self.reset_state() # set the internal buffer to zeros
 
     def reset_state(self):
         overlap_shape = self.h.shape[0] - 1                         # overlap buffer size 
         overlap_init = np.zeros((overlap_shape,self.h.shape[1]))    # create buffer for the time-domain overlap signal
-        self.overlap = overlap_init                                 # store zero values input buffer
+        self.overlap = overlap_init.astype(self.dtype)              # store zero values input buffer
         

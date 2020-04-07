@@ -8,10 +8,11 @@ kinds = ["string", "int", "float", "bool"]
 class Parameter(object):
     """ Processor parameter object. """
 
-    def __init__(self, name, value, kind, processor=None, units="", minimum=None, maximum=None, options=[], print_precision=1, randomize_value=True, **kwargs):
+    def __init__(self, name, value, kind, processor=None, units="", minimum=None, maximum=None,
+                options=[], print_precision=1, randomize_value=True, **kwargs):
 
-        self.kind = kind
-        self.name = name
+        self.kind  = kind
+        self.name  = name
         if processor:
             self.processor = processor
         else:
@@ -103,7 +104,7 @@ class Parameter(object):
                 distribution = "uniform"
         if   distribution == "uniform":
             if   self.kind == "int" and self.min != self.max:
-                self.value = np.random.randint(self.min, high=self.max)
+                self.value = np.random.randint(self.min, high=self.max, dtype='int')
             elif self.kind == "float":
                 self.value = (np.random.rand() * self.range) + self.min
             elif self.kind == "string":

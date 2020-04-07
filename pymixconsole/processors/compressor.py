@@ -6,9 +6,7 @@ from ..parameter import Parameter
 from ..parameter_list import ParameterList
 
 @jit(nopython=True)
-def n_process(data, buffer, threshold, attack_time, release_time, ratio, makeup_gain, sample_rate, yL_prev):
-
-    M = data.shape[0]
+def n_process(data, buffer, M, threshold, attack_time, release_time, ratio, makeup_gain, sample_rate, yL_prev):
 
     x_g = np.zeros(M)
     x_l = np.zeros(M)
@@ -76,6 +74,7 @@ class Compressor(Processor):
 
             x, self.yL_prev = n_process(x,
                         buffer, 
+                        x.shape[0],
                         self.parameters.threshold.value, 
                         self.parameters.attack_time.value,
                         self.parameters.release_time.value,

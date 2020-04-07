@@ -1,12 +1,16 @@
 import numpy as np
 
 class Processor():
-    def __init__(self, name, parameters, block_size, sample_rate):
+    def __init__(self, name, parameters, block_size, sample_rate, dtype="float32"):
         
         self.name        = name
         self.parameters  = parameters
         self.block_size  = block_size
         self.sample_rate = sample_rate
+        self.dtype       = dtype
+
+        if not np.log2(block_size).is_integer():
+            raise ValueError(f"Processor block size {block_size} must be a power of 2.")
 
     def update(self, parameter_name):
         pass
