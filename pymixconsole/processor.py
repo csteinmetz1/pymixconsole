@@ -28,7 +28,9 @@ class Processor():
     def randomize(self, **kwargs):
         for name, parameter in self.parameters:
             if parameter.randomize_value:
+                parameter.hold = True # hold updates til end
                 parameter.randomize()
+        self.update(None)
 
     def serialize(self):
         """ Create dict with details on all parameter values.

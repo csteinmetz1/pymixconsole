@@ -13,6 +13,7 @@ class Parameter(object):
 
         self.kind  = kind
         self.name  = name
+        self.hold  = False
         if processor:
             self.processor = processor
         else:
@@ -69,7 +70,7 @@ class Parameter(object):
     def reset(self):
         self.value = self._default
 
-    def randomize(self, distribution="default"):
+    def randomize(self, distribution="default", hold=False):
         """ Randomize the value of a parameter.
 
         By default this will select a value from a uniform distribution 
@@ -145,13 +146,13 @@ class Parameter(object):
 
         # if there is a processor reference call its update method
         # but only if we have added all parameters first?
-        if self.processor and hasattr(self.processor.parameters, self.name):
-            log = logger.getLog(logger.LOG_NAME)
-            if self.kind == "float":
-                s = f"changing {self.processor.name} {self.name} to {value:.{self.print_precision}f} {self.units}"
-            else:
-                s = f"changing {self.name} to {value}."
-            log.info(s)
+        if self.processor and hasattr(self.processor.parameters, self.name) and not self.hold:
+            #log = logger.getLog(logger.LOG_NAME)
+            #if self.kind == "float":
+            #    s = f"changing {self.processor.name} {self.name} to {value:.{self.print_precision}f} {self.units}"
+            #else:
+            #    s = f"changing {self.name} to {value}."
+            #log.info(s)
             self.processor.update(self.name)
 
     def serialize(self, normalize=False, one_hot_encode=False):

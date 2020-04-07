@@ -5,6 +5,8 @@ from ..parameter import Parameter
 from ..parameter_list import ParameterList
 from ..components.iirfilter import IIRfilter
 
+BANDS = ["low_shelf", "first_band", "second_band", "third_band", "high_shelf"]
+
 class Equaliser(Processor):
     """ Five band parametreic equaliser ( two shelves and three central bands )
 
@@ -48,9 +50,8 @@ class Equaliser(Processor):
     def setup_filters(self):
 
         filters = {}
-        bands = ["low_shelf", "first_band", "second_band", "third_band", "high_shelf"]
 
-        for band in bands:
+        for band in BANDS:
 
             G = getattr(self.parameters, band + "_gain").value
             fc = getattr(self.parameters, band + "_freq").value
@@ -65,7 +66,7 @@ class Equaliser(Processor):
 
             filters[band] = IIRfilter(G, Q, fc, rate, filter_type, n_channels=2)
 
-        return bands, filters
+        return BANDS, filters
 
     def update_filter(self, band):
 
@@ -76,10 +77,15 @@ class Equaliser(Processor):
         if band in ["first_band", "second_band", "third_band"]:
             self.filters[band].Q    = getattr(self.parameters, band + "_q").value
 
-    def update(self, parameter_name):
+    def update(self, parameter_name=None):
 
-        band = '_'.join(parameter_name.split('_')[:2])
-        self.update_filter(band)
+        if parameter_name is not None:
+            bands = ['_'.join(parameter_name.split('_')[:2])]
+        else:
+            bands = BANDS
+
+        for band in bands:
+            self.update_filter(band)
 
     def reset_state(self):
         for band, iirfilter in self.filters.items():

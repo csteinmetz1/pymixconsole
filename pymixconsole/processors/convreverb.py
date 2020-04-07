@@ -97,29 +97,28 @@ class ConvolutionalReverb(Processor):
             h *= 0.125                       # perform additional scaling for headroom
             self.impulses[reverb] = h.astype(self.dtype)        # store into dictionary
 
-    def update(self, parameter_name):
+    def update(self, parameter_name=None):
         # this should be updated soon so we only update certain parts
         # based on which parameters change
 
-        if parameter_name in ["type", "decay"]:
-            # load proper impulse from memory
-            self.h = self.impulses[self.parameters.type.value].copy()
+        # load proper impulse from memory
+        self.h = self.impulses[self.parameters.type.value].copy()
 
-            # fade out the impulse based on the decay setting
-            fstart = int(self.parameters.decay.value * self.h.shape[0])
-            fstop  = np.min((self.h.shape[0], fstart + int(0.020*self.sample_rate))) # constant 50 ms fade out
-            flen   = fstop - fstart
+        # fade out the impulse based on the decay setting
+        fstart = int(self.parameters.decay.value * self.h.shape[0])
+        fstop  = np.min((self.h.shape[0], fstart + int(0.020*self.sample_rate))) # constant 50 ms fade out
+        flen   = fstop - fstart
 
-            # if there is a fade (i.e. decay < 1.0)
-            if flen > 0 and True:
-                fade = np.arange(flen, dtype=self.dtype)/flen # normalized set of indices
-                fade = np.power(0.1, (1-fade) * 5)            # fade gain values with 100 dB of atten
-                fade = np.expand_dims(fade, 1)                # add stereo dim
-                fade = np.repeat(fade, 2, axis=1)             # copy gain to stereo dim
-                self.h[fstart:fstop,:] *= fade                # apply fade
-                self.h = self.h[:fstop]                       # throw away faded samples
+        # if there is a fade (i.e. decay < 1.0)
+        if flen > 0 and True:
+            fade = np.arange(flen, dtype=self.dtype)/flen # normalized set of indices
+            fade = np.power(0.1, (1-fade) * 5)            # fade gain values with 100 dB of atten
+            fade = np.expand_dims(fade, 1)                # add stereo dim
+            fade = np.repeat(fade, 2, axis=1)             # copy gain to stereo dim
+            self.h[fstart:fstop,:] *= fade                # apply fade
+            self.h = self.h[:fstop]                       # throw away faded samples
 
-            self.reset_state() # set the internal buffer to zeros
+        self.reset_state() # set the internal buffer to zeros
 
     def reset_state(self):
         overlap_shape = self.h.shape[0] - 1                         # overlap buffer size 
