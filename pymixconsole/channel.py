@@ -1,4 +1,5 @@
 import numpy as np
+from itertools import permutations
 
 from .processor_list import ProcessorList
 from .processors import *
@@ -105,11 +106,14 @@ class Channel():
         correspondence between the processors and their vectorized parameters. 
         """
         vals = []
+        order = []
+
+        # all possible N! orderings 
+        orderings = list([list(o) for o in permutations(static_order)])
 
         # first vectorize the pre-processors
         for idx, processor in enumerate(self.pre_processors.get_all()):
             vec = processor.vectorize()
-            #vec.append(idx)
             for v in vec:
                 vals.append(v)
 
@@ -123,6 +127,21 @@ class Channel():
                             vec = np.zeros(len(vec))
                         for v in vec:
                             vals.append(v)
+                            
+            elif order_encode_type == "flat":
+                for idx, processor in enumerate(self.processors.get_all()):
+                    order.append(processor.name)
+                    for processor_name in static_order:
+                         if processor.name == processor_name:
+                            vec = processor.vectorize()
+                            #print(processor_name, " ".join([f"{v:0.2f}" for v in vec]))
+                            for v in vec:
+                                vals.append(v)
+                # append one-hot-encoded order to the end
+                vec = np.zeros(len(orderings))
+                vec[orderings.index(order)] = 1
+                for v in vec:
+                    vals.append(v)
 
             elif order_encode_type == "one_hot":
                 for processor_name in static_order:
@@ -144,12 +163,16 @@ class Channel():
                         vec.append(idx)
                 for v in vec:
                     vals.append(v)
+
         # finally vectorize the post-processors
         for idx, processor in enumerate(self.post_processors.get_all()):
             vec = processor.vectorize()
-            #vec.append(idx)
             for v in vec:
                 vals.append(v)
+
+        #print(" ".join([f"{v:0.2f}" for v in vals]), len(vals))
+        #print()
+
         return vals
 
     def get_all_processors(self):
