@@ -1,6 +1,7 @@
 import numpy as np
+from abc import ABC, abstractmethod
 
-class Processor():
+class Processor(ABC):
     def __init__(self, name, parameters, block_size, sample_rate, dtype="float32"):
         
         self.name        = name
@@ -12,6 +13,11 @@ class Processor():
         if not np.log2(block_size).is_integer():
             raise ValueError(f"Processor block size {block_size} must be a power of 2.")
 
+    @abstractmethod
+    def process(self):
+        pass
+        
+    @abstractmethod
     def update(self, parameter_name):
         pass
 
