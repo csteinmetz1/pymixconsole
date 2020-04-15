@@ -19,3 +19,6 @@ class Gain(Processor):
 
     def process(self, data):
         return n_process(data, self.db2linear(self.parameters.gain.value))
+
+    def update(self, parameter_name):
+        pass

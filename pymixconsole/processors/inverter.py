@@ -22,3 +22,6 @@ class PolarityInverter(Processor):
 
     def process(self, data):
         return n_process(data, self.parameters.invert.value)
+
+    def update(self, parameter_name):
+        pass
