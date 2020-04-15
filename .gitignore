@@ -19,3 +19,5 @@ signals/
 .vscode
 env/
 cython/
+debug/
+tests/ 
