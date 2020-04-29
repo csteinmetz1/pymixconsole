@@ -64,7 +64,7 @@ class Compressor(Processor):
 
     def process(self, x):
 
-        if not self.parameters.bypass.value:
+        if not self.parameters.threshold.value == 0.0:
             # if input is stereo create mono downmix buffer
             if x.ndim == 2:
                 buffer = np.squeeze((x[:,0] + x[:,1])) * 0.5

@@ -49,7 +49,7 @@ class ConvolutionalReverb(Processor):
             mono = True 
             x = np.repeat(x, 2, axis=1)
 
-        if self.parameters.bypass.value or self.parameters.wet_mix.value == 0.0:
+        if self.parameters.wet_mix.value == 0.0:
             return x
         else:
             # perform partitioned convolution
