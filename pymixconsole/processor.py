@@ -67,6 +67,7 @@ class Processor(ABC):
                     val = 0
                 else:
                     val = (param["value"] - param["min"]) / (param["max"] - param["min"])
+                    val = (val * 2) - 1
             # check if there are options (string)
             elif "options" in param:
                 n_options = len(param["options"])
