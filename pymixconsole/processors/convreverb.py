@@ -31,7 +31,6 @@ class ConvolutionalReverb(Processor):
 
         if not parameters:
             self.parameters = ParameterList()
-            self.parameters.add(Parameter("bypass",   False,   "bool", processor=None, p=0.1))
             self.parameters.add(Parameter("type", "sm-room", "string", processor=self, options=["sm-room", "md-room", "lg-room", "hall", "plate"]))
             self.parameters.add(Parameter("decay",      1.0,  "float", processor=self, minimum=0.1, maximum=1.0))
             self.parameters.add(Parameter("dry_mix",    1.0,  "float", processor=self, minimum=0.0, maximum=1.0))

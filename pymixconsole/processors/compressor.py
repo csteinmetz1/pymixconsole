@@ -54,7 +54,6 @@ class Compressor(Processor):
         super().__init__(name, None, block_size, sample_rate)
 
         self.parameters = ParameterList()
-        self.parameters.add(Parameter("bypass",       False,  "bool",             processor=self, p=0.1))
         self.parameters.add(Parameter("threshold",      0.0, "float", units="dB", processor=self, minimum=-60.0, maximum=0.0))
         self.parameters.add(Parameter("attack_time",    2.0, "float", units="ms", processor=self, minimum=0.03,  maximum=30.0))
         self.parameters.add(Parameter("release_time",  50.0, "float", units="ms", processor=self, minimum=50.0,  maximum=3000.0))
