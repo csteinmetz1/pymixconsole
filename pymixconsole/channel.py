@@ -22,8 +22,8 @@ class Channel():
         self.processors = ProcessorList(block_size=bs, sample_rate=sr)
         self.processors.add(Equaliser(name="eq", block_size=bs, sample_rate=sr))
         self.processors.add(Compressor(name="compressor", block_size=bs, sample_rate=sr))
-        self.processors.add(ConvolutionalReverb(name="reverb", block_size=bs, sample_rate=sr))
-        self.processors.add(Delay(name="delay", block_size=bs, sample_rate=sr))
+        #self.processors.add(ConvolutionalReverb(name="reverb", block_size=bs, sample_rate=sr))
+        #self.processors.add(Delay(name="delay", block_size=bs, sample_rate=sr))
 
         # post-processors (order is not shuffled)
         self.post_processors = ProcessorList(block_size=bs, sample_rate=sr)
