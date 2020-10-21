@@ -163,6 +163,12 @@ on a channel, bus, or the master bus.
 - NumPy (http://www.numpy.org/)
 - SoundFile (https://github.com/bastibe/SoundFile)
 
-## References
-
-[Pan-laws](http://www.cs.cmu.edu/~music/icm-online/readings/panlaws/)
+## Cite
+If you use this in your work please consider citing: 
+```
+  @article{steinmetz2020mixing,
+            title={Automatic multitrack mixing with a differentiable mixing console of neural audio effects},
+            author={Steinmetz, Christian J. and Pons, Jordi and Pascual, Santiago and Serrà, Joan},
+            journal={arXiv:2010.10291},
+            year={2020}}
+```
