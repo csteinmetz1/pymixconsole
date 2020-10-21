@@ -158,11 +158,6 @@ on a channel, bus, or the master bus.
 | wet_mix          |       0.0 |      1.0 |      0.1 |         | float  |        |
 | stereo_spread    |         0 |      100 |       23 |         | int    |        |
 
-## Dependancies
-- SciPy (https://www.scipy.org/)
-- NumPy (http://www.numpy.org/)
-- SoundFile (https://github.com/bastibe/SoundFile)
-
 ## Cite
 If you use this in your work please consider citing: 
 ```
