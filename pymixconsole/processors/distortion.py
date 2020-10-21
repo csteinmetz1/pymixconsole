@@ -6,13 +6,6 @@ from ..processor import Processor
 from ..parameter_list import ParameterList
 
 @jit(nopython=True)
-def soft_clip(data, invert):
-    if invert:
-        return -1.0 * data
-    else:
-        return data
-
-@jit(nopython=True)
 def hard_clip(data, threshold_dB):
 
     M = data.shape[0]
@@ -33,7 +26,7 @@ def soft_clip(data, factor):
 class Distortion(Processor):
     def __init__(self, name="Distortion", parameters=None, block_size=512, sample_rate=44100):
 
-        super().__init__(name, parameters, block_size, sample_rate)
+        super().__init__(name, None, block_size, sample_rate)
 
         if not parameters:
             self.parameters = ParameterList()
@@ -50,3 +43,6 @@ class Distortion(Processor):
                 return soft_clip(data, self.parameters.factor.value)
         else:
             return data
+
+    def update(self, parameterName):
+        self.reset()
