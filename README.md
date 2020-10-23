@@ -158,6 +158,15 @@ on a channel, bus, or the master bus.
 | wet_mix          |       0.0 |      1.0 |      0.1 |         | float  |        |
 | stereo_spread    |         0 |      100 |       23 |         | int    |        |
 
+### Convolutional reverb
+
+| Parameter        |  Min.     | Max.     | Default  | Units   | Type   | Values | 
+| ---------------- | --------- | -------- | -------- | ------- | ------ | ------ |
+| dry_mix          |       0.0 |      1.0 |      0.9 |         | float  |        |
+| wet_mix          |       0.0 |      1.0 |      0.1 |         | float  |        |
+| decay            |       0.0 |      1.0 |      1.0 |         | float  |        |
+|  type            |           |          | "-4.5dB" |         | string | "sm-room", "md-room", "lg-room", "hall", "plate" |
+
 ## Cite
 If you use this in your work please consider citing: 
 ```
