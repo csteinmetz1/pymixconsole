@@ -11,7 +11,7 @@ docutils==0.15.2
 graphviz==0.13.2
 idna==2.8
 imagesize==1.1.0
-Jinja2==2.10.3
+Jinja2==2.11.3
 kiwisolver==1.1.0
 lazy-object-proxy==1.4.3
 llvmlite==0.30.0
