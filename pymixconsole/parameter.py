@@ -29,9 +29,12 @@ class Parameter(object):
         elif self.kind == "int" or self.kind == "float":
             if minimum is None or maximum is None:
                 raise ValueError("Parameter of kind 'int' and 'float' must have minimum and maximum values defined.")
+
+            assert maximum >= minimum,f"Provided maximum value {maximum} is smaller than minimum {minimum}."
+
             self.min = minimum
             self.max = maximum
-            self.range = np.abs(self.min - self.max)
+            self.range = self.max - self.min
 
         self.value = value
         self.units = units
