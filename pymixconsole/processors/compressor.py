@@ -30,7 +30,7 @@ def n_process(data, buffer, M, threshold, attack_time, release_time, ratio, make
             
         x_l[i] = x_g[i] - y_g[i]
 
-        if x_l[0] > yL_prev:
+        if x_l[i] > yL_prev:
             y_l[i] = alpha_attack * yL_prev + (1 - alpha_attack ) * x_l[i]
         else:
             y_l[i] = alpha_release * yL_prev + (1 - alpha_release) * x_l[i]
